@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="action_logilink_departments" model="ir.actions.act_window">
+        <field name="name">Department</field>
+        <field name="res_model">logilink.department</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first department
+            </p>
+            <p>
+                Manage departments for Asia Pacific College.
+                Add departments that request or borrow assets.
+            </p>
+        </field>
+    </record>
+
+    <record id="view_logilink_department_tree" model="ir.ui.view">
+        <field name="name">logilink.department.tree</field>
+        <field name="model">logilink.department</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="email"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_logilink_department_form" model="ir.ui.view">
+        <field name="name">logilink.department.form</field>
+        <field name="model">logilink.department</field>
+        <field name="arch" type="xml">
+            <form string="Department">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" required="1"/>
+                            <field name="email"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    
+</odoo>

@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_logilink_asset_user,logilink.asset user,model_logilink_asset,,1,1,1,1
+access_logilink_asset_borrowing_user,logilink.asset.borrowing user,model_logilink_asset_borrowing,,1,1,1,1
+access_logilink_department_user,logilink.department user,model_logilink_department,,1,1,1,1
+access_logilink_purchase_request_header_user,logilink.purchase.request.header user,model_logilink_purchase_request_header,,1,1,1,1
+access_logilink_purchase_request_line_user,logilink.purchase.request.line user,model_logilink_purchase_request_line,,1,1,1,1
+access_logilink_purchase_order_header_user,logilink.purchase.order.header user,model_logilink_purchase_order_header,,1,1,1,1
+access_logilink_purchase_order_line_user,logilink.purchase.order.line user,model_logilink_purchase_order_line,,1,1,1,1
+access_logilink_goods_receipt_header_user,logilink.goods.receipt.header user,model_logilink_goods_receipt_header,,1,1,1,1
+access_logilink_goods_receipt_line_user,logilink.goods.receipt.line user,model_logilink_goods_receipt_line,,1,1,1,1
+access_logilink_supplier_invoice_header_user,logilink.supplier.invoice.header user,model_logilink_supplier_invoice_header,,1,1,1,1
+access_logilink_supplier_invoice_line_user,logilink.supplier.invoice.line user,model_logilink_supplier_invoice_line,,1,1,1,1
+access_logilink_payment_header_user,logilink.payment.header user,model_logilink_payment_header,,1,1,1,1

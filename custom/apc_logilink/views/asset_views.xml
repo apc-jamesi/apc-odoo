@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="action_logilink_assets" model="ir.actions.act_window">  
+        <field name="name">Asset Registry</field>
+        <field name="res_model">logilink.asset</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first asset
+            </p>
+            <p>
+                Track and manage all assets for Asia Pacific College.
+                Create new asset records to register equipment, devices, and other institutional assets.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_logilink_suppliers" model="ir.actions.act_window">
+        <field name="name">Suppliers</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form,kanban</field>
+        <field name="context">{'default_is_company': True, 'default_supplier_rank': 1, 'search_default_suppliers': 1, 'res_partner_search_mode': 'supplier'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first supplier
+            </p>
+            <p>
+                Manage suppliers and vendors for Asia Pacific College.
+                Add suppliers that provide assets and equipment to the institution.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_logilink_departments" model="ir.actions.act_window">
+        <field name="name">Department</field>
+        <field name="res_model">logilink.department</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first department
+            </p>
+            <p>
+                Manage departments for Asia Pacific College.
+                Add departments that request or borrow assets.
+            </p>
+        </field>
+    </record>
+
+    <record id="view_logilink_asset_tree" model="ir.ui.view">
+        <field name="name">logilink.asset.tree</field>
+        <field name="model">logilink.asset</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="asset_code"/>
+                <field name="model_no"/>
+                <field name="serial_no"/>
+                <field name="date"/>
+                <field name="purchase_order_no"/>
+                <field name="received_by_id"/>
+                <field name="department_id"/>
+                <field name="supplier_id"/>
+                <field name="price"/>
+                <field name="warranty_expiration"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_logilink_asset_form" model="ir.ui.view">
+        <field name="name">logilink.asset.form</field>
+        <field name="model">logilink.asset</field>
+        <field name="arch" type="xml">
+            <form string="Asset Registry">
+                <header>
+                    <button name="action_view_transactions"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-list">
+                        <field name="transaction_count"
+                            widget="statinfo"
+                            string="Transactions"/>
+                    </button>
+                </header>
+
+                <sheet>
+                    <!-- Asset Information - 3 Columns -->
+                    <group>
+                        <!-- Column 1: Basic Information -->
+                        <group>
+                            <field name="name"/>
+                            <field name="asset_code"/>
+                            <field name="model_no"/>
+                            <field name="serial_no"/>
+                        </group>
+                        <!-- Column 2: Purchase & Receipt Information -->
+                        <group>
+                            <field name="date"/>
+                            <field name="purchase_order_no"/>
+                            <field name="supplier_id"
+                                options="{'no_create': True}"/>
+                            <field name="price"/>
+                        </group>
+                        <!-- Column 3: Assignment & Status -->
+                        <group>
+                            <field name="department_id"
+                                options="{'no_create': True}"/>
+                            <field name="received_by_id"
+                                options="{'no_create': False}"/>
+                            <field name="warranty_expiration"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+
+                    <!-- Description - Full Width -->
+                    <group>
+                        <field name="description"
+                            placeholder="Enter detailed description of the asset..."/>
+                    </group>
+
+                    <!-- Hidden field for transaction count -->
+                    <group>
+                        <field name="transaction_count" invisible="1"/>
+                    </group>
+
+                    <!-- 🔽 FULL WIDTH TRANSACTION HISTORY -->
+                    <group string="Transaction History" colspan="4">
+                        <field name="borrowing_ids"
+                            nolabel="1"
+                            context="{'default_asset_id': id}">
+                            <list editable="bottom">
+                                <field name="name" string="Reference"/>
+                                <field name="department_id" string="Department"/>
+                                <field name="borrowed_date" string="Borrowed"/>
+                                <field name="expected_return_date" string="Expected Return"/>
+                                <field name="actual_return_date" string="Returned" optional="hide"/>
+                                <field name="status" widget="badge"/>
+                                <field name="notes" optional="hide"/>
+                            </list>
+                        </field>
+                    </group>
+
+                </sheet>
+            </form>
+
+        </field>
+    </record>
+
+    
+</odoo>

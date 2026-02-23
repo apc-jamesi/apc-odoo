@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="action_logilink_payment" model="ir.actions.act_window">  
+        <field name="name">Payment</field>
+        <field name="res_model">logilink.payment.header</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first payment record
+            </p>
+            <p>
+                Manage payments for Asia Pacific College.
+                Record payments made to suppliers against invoices and track payment status.
+            </p>
+        </field>
+    </record>
+
+    <record id="view_logilink_payment_tree" model="ir.ui.view">
+        <field name="name">logilink.payment.header.tree</field>
+        <field name="model">logilink.payment.header</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="payment_reference"/>
+                <field name="invoice_id"/>
+                <field name="payment_date"/>
+                <field name="payment_method"/>
+                <field name="amount_paid"/>
+                <field name="balance_remaining"/>
+                <field name="status" widget="badge"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_logilink_payment_form" model="ir.ui.view">
+        <field name="name">logilink.payment.header.form</field>
+        <field name="model">logilink.payment.header</field>
+        <field name="arch" type="xml">
+            <form string="Payment">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="invoice_id" options="{'no_create': True}" required="1"/>
+                            <field name="payment_date" required="1"/>
+                            <field name="payment_method" required="1"/>
+                            <field name="payment_reference"/>
+                        </group>
+                        <group>
+                            <field name="amount_paid" required="1"/>
+                            <field name="balance_remaining"/>
+                            <field name="status" widget="badge"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    
+</odoo>

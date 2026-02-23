@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="action_logilink_purchase_order" model="ir.actions.act_window">  
+        <field name="name">Purchase Order</field>
+        <field name="res_model">logilink.purchase.order.header</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first purchase order
+            </p>
+            <p>
+                Manage purchase orders for Asia Pacific College.
+                Create purchase orders from approved purchase requests and track their fulfillment status.
+            </p>
+        </field>
+    </record>
+
+    <record id="view_logilink_purchase_order_tree" model="ir.ui.view">
+        <field name="name">logilink.purchase.order.header.tree</field>
+        <field name="model">logilink.purchase.order.header</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="po_number"/>
+                <field name="pr_id"/>
+                <field name="supplier_id"/>
+                <field name="po_date"/>
+                <field name="status" widget="badge"/>
+                <field name="total_po_amount"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_logilink_purchase_order_form" model="ir.ui.view">
+        <field name="name">logilink.purchase.order.header.form</field>
+        <field name="model">logilink.purchase.order.header</field>
+        <field name="arch" type="xml">
+            <form string="Purchase Order">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="po_number" required="1"/>
+                            <field name="pr_id" options="{'no_create': True}"/>
+                            <field name="supplier_id" options="{'no_create': True}" required="1"/>
+                            <field name="po_date" required="1"/>
+                        </group>
+                        <group>
+                            <field name="status"/>
+                            <field name="total_po_amount"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="PO Lines">
+                            <field name="line_ids" nolabel="1">
+                                <list editable="bottom">
+                                    <field name="pr_line_id" options="{'no_create': True}"/>
+                                    <field name="item_description" required="1"/>
+                                    <field name="quantity_ordered" required="1"/>
+                                    <field name="unit_price" required="1"/>
+                                    <field name="line_total"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    
+</odoo>

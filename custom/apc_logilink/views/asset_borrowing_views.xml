@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="action_logilink_asset_borrowing" model="ir.actions.act_window">  
+        <field name="name">Asset Borrowing / Asset Assignment</field>
+        <field name="res_model">logilink.asset.borrowing</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first asset borrowing record
+            </p>
+            <p>
+                Track asset borrowing and assignments for Asia Pacific College.
+                Manage which departments borrow assets and monitor return dates.
+            </p>
+        </field>
+    </record>
+
+    <record id="view_logilink_asset_borrowing_kanban" model="ir.ui.view">
+        <field name="name">logilink.asset.borrowing.kanban</field>
+        <field name="model">logilink.asset.borrowing</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="status" class="o_kanban_mobile">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="asset_id"/>
+                <field name="department_id"/>
+                <field name="borrowed_date"/>
+                <field name="expected_return_date"/>
+                <field name="actual_return_date"/>
+                <field name="status"/>
+                <field name="notes"/>
+                <field name="is_overdue"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_card oe_kanban_global_click" decoration-danger="is_overdue" style="padding: 0;">
+                            <!-- Header: Asset Name and Status Badge -->
+                            <div style="padding: 16px 16px 12px 16px; display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="font-size: 18px; font-weight: 600; color: #333; line-height: 1.2;">
+                                    <field name="asset_id"/>
+                                </div>
+                                <div>
+                                    <field name="status" widget="badge" 
+                                           decoration-success="status == 'returned'" 
+                                           decoration-warning="status == 'draft'" 
+                                           decoration-info="status == 'borrowed'"/>
+                                </div>
+                            </div>
+                            
+                            <!-- Department Section -->
+                            <div style="padding: 16px;">
+                                <div style="display: flex; align-items: flex-start; margin-bottom: 0;">
+                                    <i class="fa fa-building-o" style="margin-right: 8px; margin-top: 2px; color: #666; font-size: 14px;"/>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Department</div>
+                                        <div style="font-size: 14px; font-weight: 600; color: #333; line-height: 1.3;">
+                                            <field name="department_id"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Separator Line -->
+                            <div style="border-top: 1px solid #e0e0e0; margin: 0 16px;"></div>
+                            
+                            <!-- Dates Section -->
+                            <div style="padding: 16px; display: flex; gap: 24px;">
+                                <!-- Borrowed Date -->
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                                        <i class="fa fa-calendar" style="margin-right: 6px; color: #666; font-size: 12px;"/>
+                                        <div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px;">Borrowed</div>
+                                    </div>
+                                    <div style="font-size: 14px; font-weight: 600; color: #333; line-height: 1.3;">
+                                        <field name="borrowed_date"/>
+                                    </div>
+                                </div>
+                                
+                                <!-- Expected Return Date -->
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                                        <i class="fa fa-calendar-check-o" style="margin-right: 6px; color: #666; font-size: 12px;"/>
+                                        <div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px;">Expected Return</div>
+                                    </div>
+                                    <div style="font-size: 14px; font-weight: 600; color: #333; line-height: 1.3;" decoration-danger="is_overdue">
+                                        <field name="expected_return_date"/>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Actual Return Date (if exists) -->
+                            <div t-if="record.actual_return_date.raw_value">
+                                <div style="border-top: 1px solid #e0e0e0; margin: 0 16px;"></div>
+                                <div style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                                        <i class="fa fa-check-circle" style="margin-right: 6px; color: #28a745; font-size: 12px;"/>
+                                        <div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px;">Actual Return</div>
+                                    </div>
+                                    <div style="font-size: 14px; font-weight: 600; color: #28a745; line-height: 1.3;">
+                                        <field name="actual_return_date"/>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Notes Section (if exists) -->
+                            <div t-if="record.notes.raw_value">
+                                <div style="border-top: 1px solid #e0e0e0; margin: 0 16px;"></div>
+                                <div style="padding: 16px;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                                        <i class="fa fa-comment-o" style="margin-right: 6px; color: #666; font-size: 12px;"/>
+                                        <div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px;">Notes</div>
+                                    </div>
+                                    <div style="font-size: 13px; color: #666; line-height: 1.5;">
+                                        <field name="notes" widget="text"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_logilink_asset_borrowing_tree" model="ir.ui.view">
+        <field name="name">logilink.asset.borrowing.tree</field>
+        <field name="model">logilink.asset.borrowing</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="asset_id"/>
+                <field name="department_id"/>
+                <field name="borrowed_date"/>
+                <field name="expected_return_date"/>
+                <field name="actual_return_date"/>
+                <field name="status"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_logilink_asset_borrowing_form" model="ir.ui.view">
+        <field name="name">logilink.asset.borrowing.form</field>
+        <field name="model">logilink.asset.borrowing</field>
+        <field name="arch" type="xml">
+            <form string="Asset Borrowing / Asset Assignment">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="asset_id" options="{'no_create': True}" required="1"/>
+                            <field name="department_id" options="{'no_create': True}"/>
+                            <field name="status"/>
+                        </group>
+                        <group>
+                            <field name="borrowed_date" required="1"/>
+                            <field name="expected_return_date"/>
+                            <field name="actual_return_date"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="notes" placeholder="Enter any additional notes or remarks..."/>
+                    </group>
+                    <group>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    
+</odoo>
