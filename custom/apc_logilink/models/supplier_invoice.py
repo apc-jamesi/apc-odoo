@@ -41,6 +41,18 @@ class LogilinkSupplierInvoiceHeader(models.Model):
         for rec in self:
             rec.total_invoice_amount = sum(rec.line_ids.mapped("line_total") or [0])
 
+    def action_view_list_export(self):
+        """Open list view for exporting data"""
+        return {
+            'name': 'Supplier Invoices - Export',
+            'type': 'ir.actions.act_window',
+            'res_model': 'logilink.supplier.invoice.header',
+            'view_mode': 'list',
+            'view_id': False,
+            'target': 'current',
+            'context': self.env.context,
+        }
+
 
 class LogilinkSupplierInvoiceLine(models.Model):
     _name = "logilink.supplier.invoice.line"

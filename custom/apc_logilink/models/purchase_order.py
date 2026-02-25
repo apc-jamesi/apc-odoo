@@ -34,6 +34,18 @@ class LogilinkPurchaseOrderHeader(models.Model):
         for rec in self:
             rec.total_po_amount = sum(rec.line_ids.mapped("line_total") or [0])
 
+    def action_view_list_export(self):
+        """Open list view for exporting data"""
+        return {
+            'name': 'Purchase Orders - Export',
+            'type': 'ir.actions.act_window',
+            'res_model': 'logilink.purchase.order.header',
+            'view_mode': 'list',
+            'view_id': False,
+            'target': 'current',
+            'context': self.env.context,
+        }
+
 
 class LogilinkPurchaseOrderLine(models.Model):
     _name = "logilink.purchase.order.line"

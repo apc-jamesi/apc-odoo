@@ -25,6 +25,18 @@ class LogilinkGoodsReceiptHeader(models.Model):
         ("grn_number_unique", "unique(grn_number)", "GRN Number must be unique."),
     ]
 
+    def action_view_list_export(self):
+        """Open list view for exporting data"""
+        return {
+            'name': 'GRNs - Export',
+            'type': 'ir.actions.act_window',
+            'res_model': 'logilink.goods.receipt.header',
+            'view_mode': 'list',
+            'view_id': False,
+            'target': 'current',
+            'context': self.env.context,
+        }
+
 
 class LogilinkGoodsReceiptLine(models.Model):
     _name = "logilink.goods.receipt.line"

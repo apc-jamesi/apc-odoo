@@ -8,7 +8,7 @@ class LogilinkAssetBorrowing(models.Model):
 
     name = fields.Char("Reference", compute="_compute_name", store=True, readonly=True)
     asset_id = fields.Many2one("logilink.asset", string="Asset", required=True, help="Asset being borrowed or assigned")
-    borrowing_department = fields.Char("Borrowing Department", required=True, help="Department borrowing or receiving the asset")
+    borrowing_department = fields.Char("Borrowing Department", required=False, help="Department borrowing or receiving the asset (deprecated - use Department field)")
     department_id = fields.Many2one("logilink.department", string="Department", help="Department borrowing or receiving the asset")
     borrowed_date = fields.Date("Borrowed Date", default=fields.Date.today, required=True, help="Date when asset was borrowed")
     expected_return_date = fields.Date("Expected Return Date", help="Expected date for asset return")
@@ -51,3 +51,15 @@ class LogilinkAssetBorrowing(models.Model):
             if rec.actual_return_date and rec.borrowed_date:
                 if rec.actual_return_date < rec.borrowed_date:
                     raise ValueError("Actual return date cannot be earlier than borrowed date.")
+
+    def action_view_list_export(self):
+        """Open list view for exporting data"""
+        return {
+            'name': 'Asset Borrowing - Export',
+            'type': 'ir.actions.act_window',
+            'res_model': 'logilink.asset.borrowing',
+            'view_mode': 'list',
+            'view_id': False,
+            'target': 'current',
+            'context': self.env.context,
+        }

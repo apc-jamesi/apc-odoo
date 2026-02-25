@@ -12,3 +12,15 @@ class LogilinkDepartment(models.Model):
     _sql_constraints = [
         ("name_unique", "unique(name)", "Department name must be unique."),
     ]
+
+    def action_view_list_export(self):
+        """Open list view for exporting data"""
+        return {
+            'name': 'Departments - Export',
+            'type': 'ir.actions.act_window',
+            'res_model': 'logilink.department',
+            'view_mode': 'list',
+            'view_id': False,
+            'target': 'current',
+            'context': self.env.context,
+        }

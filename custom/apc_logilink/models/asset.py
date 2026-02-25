@@ -73,6 +73,18 @@ class LogilinkAsset(models.Model):
             'context': {'default_asset_id': self.id, 'search_default_asset_id': self.id},
         }
 
+    def action_view_list_export(self):
+        """Open list view for exporting data"""
+        return {
+            'name': 'Asset Registry - Export',
+            'type': 'ir.actions.act_window',
+            'res_model': 'logilink.asset',
+            'view_mode': 'list',
+            'view_id': False,
+            'target': 'current',
+            'context': self.env.context,
+        }
+
     @api.constrains("price")
     def _check_price(self):
         for rec in self:

@@ -47,6 +47,18 @@ class LogilinkPaymentHeader(models.Model):
             else:
                 rec.status = "fully_paid"
 
+    def action_view_list_export(self):
+        """Open list view for exporting data"""
+        return {
+            'name': 'Payments - Export',
+            'type': 'ir.actions.act_window',
+            'res_model': 'logilink.payment.header',
+            'view_mode': 'list',
+            'view_id': False,
+            'target': 'current',
+            'context': self.env.context,
+        }
+
 
 # Add payment_ids field to invoice header
 class LogilinkSupplierInvoiceHeader(models.Model):

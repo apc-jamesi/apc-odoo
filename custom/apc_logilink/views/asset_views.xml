@@ -4,7 +4,7 @@
     <record id="action_logilink_assets" model="ir.actions.act_window">  
         <field name="name">Asset Registry</field>
         <field name="res_model">logilink.asset</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">list,form,graph</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Create your first asset
@@ -19,7 +19,7 @@
     <record id="action_logilink_suppliers" model="ir.actions.act_window">
         <field name="name">Suppliers</field>
         <field name="res_model">res.partner</field>
-        <field name="view_mode">list,form,kanban</field>
+        <field name="view_mode">list,form,kanban,graph</field>
         <field name="context">{'default_is_company': True, 'default_supplier_rank': 1, 'search_default_suppliers': 1, 'res_partner_search_mode': 'supplier'}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
@@ -82,6 +82,12 @@
                             widget="statinfo"
                             string="Transactions"/>
                     </button>
+                    <button name="action_view_list_export"
+                            type="object"
+                            string="Export Data"
+                            class="btn-primary"
+                            icon="fa-download"
+                            title="Open list view to export data (CSV/XLSX)"/>
                 </header>
 
                 <sheet>
@@ -144,6 +150,66 @@
                 </sheet>
             </form>
 
+        </field>
+    </record>
+
+    <!-- Graph View: Suppliers Analysis -->
+    <record id="view_logilink_suppliers_graph" model="ir.ui.view">
+        <field name="name">res.partner.suppliers.graph</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <graph string="Suppliers Analysis" type="pie" sample="1">
+                <field name="category_id" type="row"/>
+                <field name="id" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Graph View: Assets by Department -->
+    <record id="view_logilink_asset_graph_department" model="ir.ui.view">
+        <field name="name">logilink.asset.graph.department</field>
+        <field name="model">logilink.asset</field>
+        <field name="arch" type="xml">
+            <graph string="Assets by Department" type="bar" sample="1">
+                <field name="department_id" type="row"/>
+                <field name="price" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Graph View: Assets by Date -->
+    <record id="view_logilink_asset_graph_date" model="ir.ui.view">
+        <field name="name">logilink.asset.graph.date</field>
+        <field name="model">logilink.asset</field>
+        <field name="arch" type="xml">
+            <graph string="Assets Over Time" type="line" sample="1">
+                <field name="date" type="row" interval="month"/>
+                <field name="price" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Graph View: Assets by Supplier -->
+    <record id="view_logilink_asset_graph_supplier" model="ir.ui.view">
+        <field name="name">logilink.asset.graph.supplier</field>
+        <field name="model">logilink.asset</field>
+        <field name="arch" type="xml">
+            <graph string="Assets by Supplier" type="pie" sample="1">
+                <field name="supplier_id" type="row"/>
+                <field name="price" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Default Graph View (Assets by Department) -->
+    <record id="view_logilink_asset_graph" model="ir.ui.view">
+        <field name="name">logilink.asset.graph</field>
+        <field name="model">logilink.asset</field>
+        <field name="arch" type="xml">
+            <graph string="Asset Analysis" type="bar" sample="1">
+                <field name="department_id" type="row"/>
+                <field name="price" type="measure"/>
+            </graph>
         </field>
     </record>
 
