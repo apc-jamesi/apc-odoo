@@ -11,3 +11,7 @@ access_logilink_goods_receipt_line_user,logilink.goods.receipt.line user,model_l
 access_logilink_supplier_invoice_header_user,logilink.supplier.invoice.header user,model_logilink_supplier_invoice_header,,1,1,1,1
 access_logilink_supplier_invoice_line_user,logilink.supplier.invoice.line user,model_logilink_supplier_invoice_line,,1,1,1,1
 access_logilink_payment_header_user,logilink.payment.header user,model_logilink_payment_header,,1,1,1,1
+access_logilink_community_user,logilink.community user,model_logilink_community,,1,1,1,1
+access_logilink_request_user,logilink.request user,model_logilink_request,,1,1,1,1
+access_logilink_request_office,logilink.request office,model_logilink_request,base.group_user,1,0,1,0
+access_logilink_asset_readonly_office,logilink.asset readonly office,model_logilink_asset,base.group_user,1,0,0,0

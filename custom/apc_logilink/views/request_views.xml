@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="action_logilink_request" model="ir.actions.act_window">
+        <field name="name">Asset Requests</field>
+        <field name="res_model">logilink.request</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('state', '=', 'pending')]</field>
+        <field name="context">{'default_state': 'pending', 'search_default_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No pending requests
+            </p>
+            <p>
+                Asset requests created via Kiosk Mode will appear here.
+                Approve or reject requests to manage asset borrowing.
+            </p>
+        </field>
+    </record>
+
+    <record id="view_logilink_request_kanban" model="ir.ui.view">
+        <field name="name">logilink.request.kanban</field>
+        <field name="model">logilink.request</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_mobile">
+                <field name="id"/>
+                <field name="uuid"/>
+                <field name="asset_id"/>
+                <field name="community_id"/>
+                <field name="request_type"/>
+                <field name="state"/>
+                <field name="create_date"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_card oe_kanban_global_click" style="padding: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                                <div>
+                                    <strong><field name="asset_id"/></strong>
+                                    <div style="font-size: 11px; color: #999; margin-top: 4px;">
+                                        UUID: <field name="uuid"/>
+                                    </div>
+                                </div>
+                                <field name="state" widget="badge" 
+                                       decoration-success="state == 'approved'" 
+                                       decoration-warning="state == 'pending'" 
+                                       decoration-danger="state == 'rejected'"/>
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <i class="fa fa-user" style="margin-right: 6px; color: #666;"></i>
+                                <field name="community_id"/>
+                            </div>
+                            <div style="font-size: 12px; color: #666;">
+                                <i class="fa fa-tag" style="margin-right: 6px;"></i>
+                                <field name="request_type"/>
+                            </div>
+                            <div style="font-size: 11px; color: #999; margin-top: 8px;">
+                                <field name="create_date"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_logilink_request_tree" model="ir.ui.view">
+        <field name="name">logilink.request.tree</field>
+        <field name="model">logilink.request</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="uuid"/>
+                <field name="asset_id"/>
+                <field name="community_id"/>
+                <field name="request_type"/>
+                <field name="state" widget="badge" 
+                       decoration-success="state == 'approved'" 
+                       decoration-warning="state == 'pending'" 
+                       decoration-danger="state == 'rejected'"/>
+                <field name="create_date"/>
+                <field name="approved_by_id"/>
+                <field name="approved_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_logilink_request_form" model="ir.ui.view">
+        <field name="name">logilink.request.form</field>
+        <field name="model">logilink.request</field>
+        <field name="arch" type="xml">
+            <form string="Asset Request">
+                <header>
+                    <button name="action_approve"
+                            type="object"
+                            string="Approve"
+                            class="oe_highlight"
+                            icon="fa-check"
+                            groups="base.group_erp_manager"
+                            invisible="state != 'pending'"/>
+                    <button name="action_reject"
+                            type="object"
+                            string="Reject"
+                            class="btn-secondary"
+                            icon="fa-times"
+                            groups="base.group_erp_manager"
+                            invisible="state != 'pending'"/>
+                    <button name="action_reset_to_draft"
+                            type="object"
+                            string="Reset to Draft"
+                            class="btn-secondary"
+                            icon="fa-undo"
+                            groups="base.group_erp_manager"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,pending,approved"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="uuid" readonly="1"/>
+                            <field name="asset_id" options="{'no_create': True}" required="1"/>
+                            <field name="request_type" required="1"/>
+                            <field name="community_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="create_date" readonly="1"/>
+                            <field name="approved_by_id" readonly="1"/>
+                            <field name="approved_date" readonly="1"/>
+                            <field name="borrowing_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="notes" placeholder="Additional notes or remarks..."/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Add menu item for Requests -->
+    <menuitem id="logilink_menu_request" 
+              name="Asset Requests" 
+              parent="logilink_root_menu" 
+              action="action_logilink_request" 
+              sequence="15"/>
+
+    
+</odoo>

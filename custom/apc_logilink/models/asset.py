@@ -4,6 +4,7 @@ from odoo import api, fields, models
 class LogilinkAsset(models.Model):
     _name = "logilink.asset"
     _description = "Asset Registry"
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = "name"
 
     name = fields.Char("Name", required=True, help="Asset name or title")
@@ -20,11 +21,33 @@ class LogilinkAsset(models.Model):
     warranty_expiration = fields.Date("Warranty Expiration", help="Warranty expiration date")
     price = fields.Monetary("Price", currency_field="currency_id", help="Purchase price of the asset")
     currency_id = fields.Many2one("res.currency", string="Currency", default=lambda self: self.env.company.currency_id)
+    status = fields.Selection(
+        [
+            ('working', 'Working'),
+            ('broken', 'Broken'),
+            ('under_maintenance', 'Under Maintenance'),
+            ('retired', 'Retired'),
+            ('disposed', 'Disposed'),
+            ('lost', 'Lost'),
+            ('reserved', 'Reserved'),
+        ],
+        string="Asset Status",
+        default='working',
+        required=True,
+        help="Current operational status of the asset"
+    )
     active = fields.Boolean(default=True, help="Archive/unarchive asset")
+    kiosk_url = fields.Char("Kiosk URL", compute="_compute_kiosk_url", store=False, help="QR/Barcode URL for kiosk mode")
     
     # Transaction History Fields
     borrowing_ids = fields.One2many("logilink.asset.borrowing", "asset_id", string="Transaction History", help="All borrowing/assignment records for this asset")
     transaction_count = fields.Integer("Transaction Count", compute="_compute_transaction_count", store=False, help="Total number of borrowing/assignment transactions")
+    
+    # Last Borrower Information
+    last_borrower_id = fields.Many2one("logilink.community", string="Last Borrower", compute="_compute_last_borrower", store=False, help="Last person who borrowed this asset")
+    last_borrowed_date = fields.Date("Last Borrowed Date", compute="_compute_last_borrower", store=False, help="Date when asset was last borrowed")
+    current_borrower_id = fields.Many2one("logilink.community", string="Current Borrower", compute="_compute_current_borrower", store=False, help="Person who currently has this asset")
+    is_currently_borrowed = fields.Boolean("Currently Borrowed", compute="_compute_current_borrower", store=False, help="True if asset is currently borrowed")
 
     _sql_constraints = [
         ("asset_code_unique", "unique(asset_code)", "Asset code must be unique."),
@@ -60,6 +83,44 @@ class LogilinkAsset(models.Model):
         """Compute the total number of transactions for this asset"""
         for rec in self:
             rec.transaction_count = len(rec.borrowing_ids)
+
+    @api.depends("borrowing_ids", "borrowing_ids.borrowed_date", "borrowing_ids.community_id")
+    def _compute_last_borrower(self):
+        """Compute the last borrower information"""
+        for rec in self:
+            # Get the most recent borrowing record (by borrowed_date)
+            last_borrowing = rec.borrowing_ids.sorted('borrowed_date', reverse=True)
+            if last_borrowing:
+                rec.last_borrower_id = last_borrowing[0].community_id
+                rec.last_borrowed_date = last_borrowing[0].borrowed_date
+            else:
+                rec.last_borrower_id = False
+                rec.last_borrowed_date = False
+
+    @api.depends("borrowing_ids", "borrowing_ids.status", "borrowing_ids.community_id")
+    def _compute_current_borrower(self):
+        """Compute the current borrower information"""
+        for rec in self:
+            # Find active borrowing (status = 'borrowed')
+            current_borrowing = rec.borrowing_ids.filtered(lambda b: b.status == 'borrowed')
+            if current_borrowing:
+                # Get the most recent active borrowing
+                latest = current_borrowing.sorted('borrowed_date', reverse=True)
+                rec.current_borrower_id = latest[0].community_id
+                rec.is_currently_borrowed = True
+            else:
+                rec.current_borrower_id = False
+                rec.is_currently_borrowed = False
+
+    @api.depends("asset_code")
+    def _compute_kiosk_url(self):
+        """Compute kiosk URL for QR/barcode generation"""
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        for rec in self:
+            if rec.asset_code:
+                rec.kiosk_url = f"{base_url}/logilink/kiosk?asset_code={rec.asset_code}"
+            else:
+                rec.kiosk_url = False
 
     def action_view_transactions(self):
         """Open filtered view of transactions for this asset"""

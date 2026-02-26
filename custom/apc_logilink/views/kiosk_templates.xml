@@ -1,0 +1,623 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="kiosk_template" name="Kiosk Terminal">
+        <t t-call="web.layout">
+            <t t-set="title">Asset Kiosk Terminal</t>
+            <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%); overflow: hidden; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                <!-- Hidden Barcode Scanner Input -->
+                <input type="text" 
+                       id="barcode_scanner" 
+                       autofocus="autofocus"
+                       style="position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0;"/>
+                
+                <!-- Header with APC Logo/Branding -->
+                <div style="background: #1e3a5f; padding: 20px 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <div style="color: #d4af37; font-size: 28px; font-weight: bold; letter-spacing: 2px;">
+                        ASIA PACIFIC COLLEGE
+                    </div>
+                    <div style="color: #d4af37; font-size: 14px; margin-top: 5px; opacity: 0.9;">
+                        Asset Kiosk Terminal
+                    </div>
+                </div>
+                
+                <!-- Full Screen Status Display -->
+                <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: calc(100vh - 100px); width: 100vw; padding: 40px; box-sizing: border-box;">
+                    <!-- Main Status Indicator -->
+                    <div id="main_status" style="font-size: 64px; font-weight: 700; text-align: center; margin-bottom: 50px; color: #1e3a5f; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">
+                        WAITING FOR SCAN
+                    </div>
+                    
+                    <!-- Asset Status -->
+                    <div id="asset_status" style="display: none; text-align: center; margin-bottom: 50px; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 900px; width: 90%;">
+                        <div style="font-size: 20px; color: #666; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Asset Detected</div>
+                        <div id="asset_name" style="font-size: 42px; font-weight: bold; color: #1e3a5f; margin-bottom: 20px;"></div>
+                        <div id="borrower_info" style="font-size: 18px; color: #666; margin-bottom: 30px; padding: 15px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #d4af37;"></div>
+                        
+                        <!-- Request Type Selection -->
+                        <div id="request_type_section" style="margin-bottom: 30px; display: none;">
+                            <div style="font-size: 22px; color: #1e3a5f; margin-bottom: 20px; font-weight: 600;">Select Request Type</div>
+                            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                                <button id="borrow_btn" class="request_type_btn" data-type="borrow" 
+                                        style="font-size: 20px; padding: 15px 35px; background: #d4af37; color: #1e3a5f; border: 3px solid #d4af37; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s; min-width: 150px;"
+                                        onmouseover="if (!this.disabled) { this.style.background='#c9a030'; this.style.borderColor='#c9a030'; }"
+                                        onmouseout="if (!this.disabled) { this.style.background='#d4af37'; this.style.borderColor='#d4af37'; }">
+                                    📦 BORROW
+                                </button>
+                                <button class="request_type_btn" data-type="return" 
+                                        style="font-size: 20px; padding: 15px 35px; background: white; color: #1e3a5f; border: 3px solid #1e3a5f; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s; min-width: 150px;"
+                                        onmouseover="this.style.background='#f0f0f0';"
+                                        onmouseout="this.style.background='white';">
+                                    ↩️ RETURN
+                                </button>
+                                <button class="request_type_btn" data-type="repair" 
+                                        style="font-size: 20px; padding: 15px 35px; background: white; color: #1e3a5f; border: 3px solid #1e3a5f; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s; min-width: 150px;"
+                                        onmouseover="this.style.background='#f0f0f0';"
+                                        onmouseout="this.style.background='white';">
+                                    🔧 REPAIR
+                                </button>
+                            </div>
+                            <div id="borrow_warning" style="display: none; margin-top: 15px; padding: 12px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; color: #856404; font-size: 16px; font-weight: 600;"></div>
+                        </div>
+                        
+                        <!-- Asset Status Not Working Message -->
+                        <div id="asset_status_message" style="display: none; margin-top: 30px; padding: 25px; background: #f8d7da; border: 3px solid #dc3545; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 24px; color: #dc3545; font-weight: bold; margin-bottom: 10px;">⚠️ Asset Not Available</div>
+                            <div id="asset_status_text" style="font-size: 18px; color: #721c24;"></div>
+                            <div style="font-size: 16px; color: #721c24; margin-top: 10px;">Only assets with status 'Working' can be processed through the kiosk.</div>
+                        </div>
+                        
+                        <!-- Manual ID Number Input -->
+                        <div id="id_input_section" style="margin-top: 30px; display: none;">
+                            <div style="font-size: 24px; color: #1e3a5f; margin-bottom: 25px; font-weight: 600;">Enter Employee ID Number</div>
+                            <input type="text" 
+                                   id="id_number_input" 
+                                   placeholder="Type ID Number here..."
+                                   style="font-size: 28px; padding: 20px 30px; width: 100%; max-width: 500px; background: #f8f9fa; color: #1e3a5f; border: 3px solid #d4af37; border-radius: 8px; text-align: center; font-weight: 600; outline: none; transition: all 0.3s;"
+                                   autocomplete="off"
+                                   onfocus="this.style.borderColor='#1e3a5f'; this.style.boxShadow='0 0 0 3px rgba(212,175,55,0.2)';"
+                                   onblur="this.style.borderColor='#d4af37'; this.style.boxShadow='none';"/>
+                        </div>
+                        
+                        <!-- Notes Input -->
+                        <div id="notes_section" style="margin-top: 30px; display: none;">
+                            <div style="font-size: 22px; color: #1e3a5f; margin-bottom: 15px; font-weight: 600;">Notes (Optional)</div>
+                            <textarea id="notes_input" 
+                                      placeholder="Enter any additional notes or remarks..."
+                                      style="font-size: 18px; padding: 15px; width: 100%; max-width: 600px; min-height: 100px; background: #f8f9fa; color: #1e3a5f; border: 3px solid #d4af37; border-radius: 8px; font-weight: 500; outline: none; transition: all 0.3s; resize: vertical; font-family: inherit;"
+                                      onfocus="this.style.borderColor='#1e3a5f'; this.style.boxShadow='0 0 0 3px rgba(212,175,55,0.2)';"
+                                      onblur="this.style.borderColor='#d4af37'; this.style.boxShadow='none';"></textarea>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div id="submit_section" style="margin-top: 30px; display: none;">
+                            <button id="submit_id_btn" 
+                                    style="font-size: 22px; padding: 18px 50px; background: #d4af37; color: #1e3a5f; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: all 0.3s; box-shadow: 0 4px 15px rgba(212,175,55,0.3);"
+                                    onmouseover="this.style.background='#c9a030'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(212,175,55,0.4)';"
+                                    onmouseout="this.style.background='#d4af37'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(212,175,55,0.3)';">
+                                SUBMIT REQUEST
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Community Status -->
+                    <div id="community_status" style="display: none; font-size: 36px; text-align: center; margin-bottom: 30px; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 600px; width: 90%;">
+                        <div style="font-size: 20px; color: #666; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">Borrower Detected</div>
+                        <div id="community_name" style="font-size: 32px; font-weight: bold; color: #1e3a5f;"></div>
+                    </div>
+                    
+                    <!-- Success Message -->
+                    <div id="success_message" style="display: none; text-align: center; margin-top: 40px; background: white; padding: 50px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 700px; width: 90%; border: 3px solid #28a745;">
+                        <div style="font-size: 48px; font-weight: bold; margin-bottom: 20px; color: #28a745;">✓ REQUEST CREATED</div>
+                        <div id="request_uuid" style="font-size: 20px; color: #666; margin-top: 15px;"></div>
+                    </div>
+                    
+                    <!-- Error Message -->
+                    <div id="error_message" style="display: none; text-align: center; margin-top: 40px; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); max-width: 700px; width: 90%; border: 3px solid #dc3545;">
+                        <div id="error_text" style="font-size: 32px; font-weight: bold; color: #dc3545;"></div>
+                    </div>
+                    
+                    <!-- Instructions (Small, Bottom) -->
+                    <div id="instructions" style="position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); font-size: 16px; color: #666; text-align: center; background: white; padding: 20px 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <div style="font-weight: 600; color: #1e3a5f; margin-bottom: 8px;">Instructions</div>
+                        <div>1. Scan Asset Code</div>
+                        <div>2. Select Request Type (Borrow/Return/Repair)</div>
+                        <div>3. Enter ID Number (for Borrow) or Notes</div>
+                        <div style="margin-top: 8px; font-size: 14px; color: #999;">Request will be created automatically</div>
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                (function() {
+                    'use strict';
+                    
+                    var barcodeInput = document.getElementById('barcode_scanner');
+                    var idNumberInput = document.getElementById('id_number_input');
+                    var notesInput = document.getElementById('notes_input');
+                    var submitIdBtn = document.getElementById('submit_id_btn');
+                    var mainStatus = document.getElementById('main_status');
+                    var assetStatus = document.getElementById('asset_status');
+                    var communityStatus = document.getElementById('community_status');
+                    var successMessage = document.getElementById('success_message');
+                    var errorMessage = document.getElementById('error_message');
+                    var assetName = document.getElementById('asset_name');
+                    var borrowerInfo = document.getElementById('borrower_info');
+                    var communityName = document.getElementById('community_name');
+                    var requestUuid = document.getElementById('request_uuid');
+                    var errorText = document.getElementById('error_text');
+                    var instructions = document.getElementById('instructions');
+                    var idInputSection = document.getElementById('id_input_section');
+                    var notesSection = document.getElementById('notes_section');
+                    var submitSection = document.getElementById('submit_section');
+                    var borrowBtn = document.getElementById('borrow_btn');
+                    var borrowWarning = document.getElementById('borrow_warning');
+                    var requestTypeSection = document.getElementById('request_type_section');
+                    var assetStatusMessage = document.getElementById('asset_status_message');
+                    var assetStatusText = document.getElementById('asset_status_text');
+                    
+                    var currentScan = '';
+                    var scanTimeout = null;
+                    var assetScanned = false;
+                    var communityScanned = false;
+                    var selectedRequestType = null;
+                    var canBorrow = true;
+                    var currentAssetStatus = null;
+                    
+                    // Force focus every 500ms (only if asset not scanned and user not typing in notes)
+                    function forceFocus() {
+                        var activeElement = document.activeElement;
+                        // Don't interfere if user is typing in notes or ID input
+                        if (!assetScanned &amp;&amp; activeElement !== barcodeInput &amp;&amp; activeElement !== notesInput &amp;&amp; activeElement !== idNumberInput) {
+                            barcodeInput.focus();
+                        }
+                    }
+                    setInterval(forceFocus, 500);
+                    
+                    // Initial focus
+                    setTimeout(function() {
+                        barcodeInput.focus();
+                    }, 100);
+                    
+                    // Handle barcode scanner input
+                    barcodeInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            var scanValue = currentScan.trim();
+                            if (scanValue) {
+                                processScan(scanValue);
+                                currentScan = '';
+                                barcodeInput.value = '';
+                            }
+                        } else if (e.key.length === 1) {
+                            currentScan += e.key;
+                            // Reset timeout
+                            if (scanTimeout) {
+                                clearTimeout(scanTimeout);
+                            }
+                            scanTimeout = setTimeout(function() {
+                                var scanValue = currentScan.trim();
+                                if (scanValue) {
+                                    processScan(scanValue);
+                                    currentScan = '';
+                                    barcodeInput.value = '';
+                                }
+                            }, 100);
+                        }
+                    });
+                    
+                    // Process scan using jsonrpc
+                    function processScan(scanValue) {
+                        hideAllMessages();
+                        mainStatus.textContent = 'PROCESSING...';
+                        mainStatus.style.color = '#d4af37';
+                        
+                        // Simple jsonrpc call
+                        var jsonrpcData = {
+                            jsonrpc: '2.0',
+                            method: 'call',
+                            params: {scan_value: scanValue},
+                            id: Math.floor(Math.random() * 1000000)
+                        };
+                        
+                        fetch('/logilink/kiosk/scan', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(jsonrpcData)
+                        })
+                            .then(function(response) {
+                                return response.json();
+                            })
+                            .then(function(data) {
+                                var result = data.result || data;
+                                if (result &amp;&amp; result.success) {
+                                    if (result.type === 'asset') {
+                                        assetScanned = true;
+                                        assetName.textContent = result.name;
+                                        currentAssetStatus = result.asset_status;
+                                        
+                                        // Check if asset status is 'Working'
+                                        var isWorking = result.asset_status === 'working';
+                                        
+                                        // Display borrower information
+                                        if (result.borrower_info) {
+                                            borrowerInfo.textContent = result.borrower_info;
+                                            borrowerInfo.style.display = 'block';
+                                            if (result.is_currently_borrowed) {
+                                                borrowerInfo.style.borderLeftColor = '#dc3545'; // Red for currently borrowed
+                                                borrowerInfo.style.color = '#dc3545';
+                                            } else {
+                                                borrowerInfo.style.borderLeftColor = '#d4af37'; // Gold for last borrower
+                                                borrowerInfo.style.color = '#666';
+                                            }
+                                        } else {
+                                            borrowerInfo.textContent = 'No borrowing history';
+                                            borrowerInfo.style.display = 'block';
+                                            borrowerInfo.style.borderLeftColor = '#28a745'; // Green for available
+                                            borrowerInfo.style.color = '#28a745';
+                                        }
+                                        
+                                        // Show/hide request type section based on asset status
+                                        if (isWorking) {
+                                            // Asset is Working - show request type buttons
+                                            requestTypeSection.style.display = 'block';
+                                            assetStatusMessage.style.display = 'none';
+                                            
+                                            // Check if asset can be borrowed (not currently borrowed)
+                                            canBorrow = result.can_borrow !== false;
+                                            
+                                            // Enable/disable Borrow button
+                                            if (!canBorrow) {
+                                                borrowBtn.disabled = true;
+                                                borrowBtn.style.background = '#cccccc';
+                                                borrowBtn.style.color = '#666';
+                                                borrowBtn.style.borderColor = '#cccccc';
+                                                borrowBtn.style.cursor = 'not-allowed';
+                                                borrowBtn.style.opacity = '0.6';
+                                                borrowWarning.textContent = result.borrow_reason || 'Borrow is not available for this asset.';
+                                                borrowWarning.style.display = 'block';
+                                            } else {
+                                                borrowBtn.disabled = false;
+                                                borrowBtn.style.background = '#d4af37';
+                                                borrowBtn.style.color = '#1e3a5f';
+                                                borrowBtn.style.borderColor = '#d4af37';
+                                                borrowBtn.style.cursor = 'pointer';
+                                                borrowBtn.style.opacity = '1';
+                                                borrowWarning.style.display = 'none';
+                                            }
+                                        } else {
+                                            // Asset is NOT Working - hide all buttons, show message
+                                            requestTypeSection.style.display = 'none';
+                                            assetStatusMessage.style.display = 'block';
+                                            
+                                            // Get status label
+                                            var statusLabels = {
+                                                'broken': 'Broken',
+                                                'under_maintenance': 'Under Maintenance',
+                                                'retired': 'Retired',
+                                                'disposed': 'Disposed',
+                                                'lost': 'Lost',
+                                                'reserved': 'Reserved'
+                                            };
+                                            var statusLabel = statusLabels[result.asset_status] || result.asset_status;
+                                            assetStatusText.textContent = 'Current Asset Status: ' + statusLabel;
+                                        }
+                                        
+                                        assetStatus.style.display = 'block';
+                                        mainStatus.style.display = 'none'; // Hide main status to avoid overlap
+                                        // Hide instructions
+                                        instructions.style.display = 'none';
+                                    } else if (result.type === 'community') {
+                                        communityScanned = true;
+                                        communityName.textContent = result.name;
+                                        communityStatus.style.display = 'block';
+                                        
+                                        if (result.request_created) {
+                                            // Request created successfully
+                                            hideAllMessages();
+                                            requestUuid.textContent = 'UUID: ' + result.request_uuid;
+                                            successMessage.style.display = 'block';
+                                            mainStatus.textContent = 'REQUEST CREATED';
+                                            mainStatus.style.color = '#28a745';
+                                            
+                                            // Reset after 3 seconds
+                                            setTimeout(function() {
+                                                resetKiosk();
+                                            }, 3000);
+                                        } else {
+                                            mainStatus.textContent = 'BORROWER SCANNED';
+                                            mainStatus.style.color = '#d4af37';
+                                        }
+                                    }
+                                } else {
+                                    showError(result ? result.message : 'Unknown error');
+                                }
+                                // Refocus based on state
+                                setTimeout(function() {
+                                    if (assetScanned) {
+                                        idNumberInput.focus();
+                                    } else {
+                                        barcodeInput.focus();
+                                    }
+                                }, 100);
+                            })
+                            .catch(function(error) {
+                                showError('Network error: ' + (error.message || error));
+                                setTimeout(function() {
+                                    if (assetScanned) {
+                                        idNumberInput.focus();
+                                    } else {
+                                        barcodeInput.focus();
+                                    }
+                                }, 100);
+                            });
+                    }
+                    
+                    // Handle request type selection
+                    var requestTypeButtons = document.querySelectorAll('.request_type_btn');
+                    requestTypeButtons.forEach(function(btn) {
+                        btn.addEventListener('click', function() {
+                            // Don't allow selection if button is disabled
+                            if (this.disabled) {
+                                return;
+                            }
+                            
+                            selectedRequestType = this.getAttribute('data-type');
+                            
+                            // Update button styles
+                            requestTypeButtons.forEach(function(b) {
+                                if (!b.disabled) {
+                                    b.style.background = 'white';
+                                    b.style.color = '#1e3a5f';
+                                    b.style.borderColor = '#1e3a5f';
+                                }
+                            });
+                            if (!this.disabled) {
+                                this.style.background = '#d4af37';
+                                this.style.color = '#1e3a5f';
+                                this.style.borderColor = '#d4af37';
+                            }
+                            
+                            // Show/hide sections based on request type
+                            if (selectedRequestType === 'borrow') {
+                                if (!canBorrow) {
+                                    return; // Don't proceed if borrow is not allowed
+                                }
+                                idInputSection.style.display = 'block';
+                                notesSection.style.display = 'block';
+                                submitSection.style.display = 'block';
+                                setTimeout(function() {
+                                    idNumberInput.focus();
+                                }, 100);
+                            } else if (selectedRequestType === 'return' || selectedRequestType === 'repair') {
+                                idInputSection.style.display = 'none';
+                                notesSection.style.display = 'block';
+                                submitSection.style.display = 'block';
+                                setTimeout(function() {
+                                    notesInput.focus();
+                                }, 100);
+                            }
+                            
+                            // Stop forcing focus on barcode input once request type is selected
+                            assetScanned = true;
+                        });
+                    });
+                    
+                    function showRequestTypeButtons() {
+                        // Request type buttons are already visible in the template
+                        // Just ensure they're ready
+                    }
+                    
+                    // Handle manual ID number input
+                    idNumberInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (notesInput.value.trim() || confirm('No notes entered. Submit anyway?')) {
+                                submitRequest();
+                            }
+                        }
+                    });
+                    
+                    notesInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' &amp;&amp; e.ctrlKey) {
+                            e.preventDefault();
+                            submitRequest();
+                        }
+                    });
+                    
+                    submitIdBtn.addEventListener('click', function() {
+                        submitRequest();
+                    });
+                    
+                    function submitRequest() {
+                        if (!selectedRequestType) {
+                            showError('Please select a request type');
+                            return;
+                        }
+                        
+                        if (!assetScanned) {
+                            showError('Please scan an asset first');
+                            return;
+                        }
+                        
+                        // Check if borrow is allowed
+                        if (selectedRequestType === 'borrow' &amp;&amp; !canBorrow) {
+                            showError('Borrow is not available for this asset. ' + (borrowWarning.textContent || ''));
+                            return;
+                        }
+                        
+                        var idNumber = '';
+                        var notes = notesInput.value.trim();
+                        
+                        if (selectedRequestType === 'borrow') {
+                            idNumber = idNumberInput.value.trim();
+                            if (!idNumber) {
+                                showError('Please enter an ID Number');
+                                idNumberInput.focus();
+                                return;
+                            }
+                        }
+                        
+                        // Create request via jsonrpc
+                        createRequest(selectedRequestType, idNumber, notes);
+                    }
+                    
+                    function createRequest(requestType, idNumber, notes) {
+                        hideAllMessages();
+                        mainStatus.textContent = 'CREATING REQUEST...';
+                        mainStatus.style.color = '#d4af37';
+                        mainStatus.style.display = 'block';
+                        
+                        var jsonrpcData = {
+                            jsonrpc: '2.0',
+                            method: 'call',
+                            params: {
+                                request_type: requestType,
+                                id_number: idNumber,
+                                notes: notes
+                            },
+                            id: Math.floor(Math.random() * 1000000)
+                        };
+                        
+                        fetch('/logilink/kiosk/create_request', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(jsonrpcData)
+                        })
+                        .then(function(response) {
+                            return response.json();
+                        })
+                        .then(function(data) {
+                            var result = data.result || data;
+                            if (result &amp;&amp; result.success) {
+                                // Request created successfully
+                                hideAllMessages();
+                                assetStatus.style.display = 'none'; // Hide asset card
+                                requestUuid.textContent = 'UUID: ' + result.request_uuid;
+                                successMessage.style.display = 'block';
+                                mainStatus.textContent = 'REQUEST CREATED';
+                                mainStatus.style.color = '#28a745';
+                                mainStatus.style.display = 'block';
+                                
+                                // Reset after 3 seconds
+                                setTimeout(function() {
+                                    resetKiosk();
+                                }, 3000);
+                            } else {
+                                showError(result ? result.message : 'Unknown error');
+                            }
+                        })
+                        .catch(function(error) {
+                            showError('Network error: ' + (error.message || error));
+                        });
+                    }
+                    
+                    function showError(message) {
+                        errorText.textContent = message;
+                        errorMessage.style.display = 'block';
+                        mainStatus.textContent = 'ERROR';
+                        mainStatus.style.color = '#dc3545';
+                    }
+                    
+                    function hideAllMessages() {
+                        assetStatus.style.display = 'none';
+                        communityStatus.style.display = 'none';
+                        successMessage.style.display = 'none';
+                        errorMessage.style.display = 'none';
+                        borrowerInfo.style.display = 'none';
+                        requestTypeSection.style.display = 'none';
+                        assetStatusMessage.style.display = 'none';
+                    }
+                    
+                    function resetKiosk() {
+                        hideAllMessages();
+                        assetScanned = false;
+                        communityScanned = false;
+                        selectedRequestType = null;
+                        idNumberInput.value = '';
+                        notesInput.value = '';
+                        
+                        // Reset request type buttons
+                        canBorrow = true;
+                        currentAssetStatus = null;
+                        requestTypeSection.style.display = 'none';
+                        assetStatusMessage.style.display = 'none';
+                        requestTypeButtons.forEach(function(btn) {
+                            if (btn.getAttribute('data-type') === 'borrow') {
+                                btn.disabled = false;
+                                btn.style.background = '#d4af37';
+                                btn.style.color = '#1e3a5f';
+                                btn.style.borderColor = '#d4af37';
+                                btn.style.cursor = 'pointer';
+                                btn.style.opacity = '1';
+                            } else {
+                                btn.style.background = 'white';
+                                btn.style.color = '#1e3a5f';
+                                btn.style.borderColor = '#1e3a5f';
+                            }
+                        });
+                        borrowWarning.style.display = 'none';
+                        
+                        idInputSection.style.display = 'none';
+                        notesSection.style.display = 'none';
+                        submitSection.style.display = 'none';
+                        
+                        mainStatus.textContent = 'WAITING FOR SCAN';
+                        mainStatus.style.color = '#1e3a5f';
+                        mainStatus.style.display = 'block'; // Show main status again
+                        instructions.style.display = 'block';
+                        
+                        // Clear session via jsonrpc
+                        fetch('/logilink/kiosk/clear', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                jsonrpc: '2.0',
+                                method: 'call',
+                                params: {},
+                                id: Math.floor(Math.random() * 1000000)
+                            })
+                        });
+                        
+                        setTimeout(function() {
+                            barcodeInput.focus();
+                        }, 100);
+                    }
+                    
+                    // Keep focus on appropriate input (but don't interfere if user clicks on notes or inputs)
+                    document.addEventListener('click', function(e) {
+                        var target = e.target;
+                        // Don't refocus if user clicked on notes, ID input, or submit button
+                        if (target === notesInput || target === idNumberInput || target === submitIdBtn || 
+                            target.closest('#notes_section') || target.closest('#id_input_section') || 
+                            target.closest('#submit_section')) {
+                            return;
+                        }
+                        
+                        setTimeout(function() {
+                            var activeElement = document.activeElement;
+                            // Only refocus if user is not actively typing
+                            if (activeElement !== notesInput &amp;&amp; activeElement !== idNumberInput) {
+                                if (assetScanned &amp;&amp; selectedRequestType === 'borrow' &amp;&amp; idInputSection.style.display !== 'none') {
+                                    idNumberInput.focus();
+                                } else if (assetScanned &amp;&amp; (selectedRequestType === 'return' || selectedRequestType === 'repair')) {
+                                    notesInput.focus();
+                                } else if (!assetScanned) {
+                                    barcodeInput.focus();
+                                }
+                            }
+                        }, 100);
+                    });
+                    
+                    // Prevent context menu
+                    document.addEventListener('contextmenu', function(e) {
+                        e.preventDefault();
+                    });
+                })();
+            </script>
+        </t>
+    </template>
+</odoo>

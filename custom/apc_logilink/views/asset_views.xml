@@ -54,6 +54,7 @@
             <list>
                 <field name="name"/>
                 <field name="asset_code"/>
+                <field name="status" widget="badge" decoration-success="status == 'working'" decoration-warning="status == 'under_maintenance' or status == 'reserved'" decoration-danger="status == 'broken' or status == 'lost'"/>
                 <field name="model_no"/>
                 <field name="serial_no"/>
                 <field name="date"/>
@@ -99,6 +100,7 @@
                             <field name="asset_code"/>
                             <field name="model_no"/>
                             <field name="serial_no"/>
+                            <field name="kiosk_url" readonly="1" widget="url" placeholder="Generate QR code URL for kiosk mode"/>
                         </group>
                         <!-- Column 2: Purchase & Receipt Information -->
                         <group>
@@ -114,9 +116,25 @@
                                 options="{'no_create': True}"/>
                             <field name="received_by_id"
                                 options="{'no_create': False}"/>
+                            <field name="status" widget="radio" options="{'horizontal': true}"/>
                             <field name="warranty_expiration"/>
                             <field name="active"/>
                         </group>
+                    </group>
+                    
+                    <!-- Borrower Information Section -->
+                    <group string="Borrower Information" colspan="4">
+                        <group>
+                            <field name="is_currently_borrowed" readonly="1"/>
+                            <field name="current_borrower_id" readonly="1" invisible="not is_currently_borrowed"/>
+                        </group>
+                        <group>
+                            <field name="last_borrower_id" readonly="1"/>
+                            <field name="last_borrowed_date" readonly="1"/>
+                        </group>
+                    </group>
+                    
+                    <group>
                     </group>
 
                     <!-- Description - Full Width -->
@@ -137,7 +155,7 @@
                             context="{'default_asset_id': id}">
                             <list editable="bottom">
                                 <field name="name" string="Reference"/>
-                                <field name="department_id" string="Department"/>
+                                <field name="community_id" string="Community Member"/>
                                 <field name="borrowed_date" string="Borrowed"/>
                                 <field name="expected_return_date" string="Expected Return"/>
                                 <field name="actual_return_date" string="Returned" optional="hide"/>
@@ -148,6 +166,7 @@
                     </group>
 
                 </sheet>
+                <chatter/>
             </form>
 
         </field>
@@ -209,6 +228,18 @@
             <graph string="Asset Analysis" type="bar" sample="1">
                 <field name="department_id" type="row"/>
                 <field name="price" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- Graph View: Assets by Status -->
+    <record id="view_logilink_asset_graph_status" model="ir.ui.view">
+        <field name="name">logilink.asset.graph.status</field>
+        <field name="model">logilink.asset</field>
+        <field name="arch" type="xml">
+            <graph string="Assets by Status" type="pie" sample="1">
+                <field name="status" type="row"/>
+                <field name="id" type="measure"/>
             </graph>
         </field>
     </record>

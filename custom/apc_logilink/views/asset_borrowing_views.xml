@@ -11,7 +11,7 @@
             </p>
             <p>
                 Track asset borrowing and assignments for Asia Pacific College.
-                Manage which departments borrow assets and monitor return dates.
+                Manage which community members borrow assets and monitor return dates.
             </p>
         </field>
     </record>
@@ -24,7 +24,7 @@
                 <field name="id"/>
                 <field name="name"/>
                 <field name="asset_id"/>
-                <field name="department_id"/>
+                <field name="community_id"/>
                 <field name="borrowed_date"/>
                 <field name="expected_return_date"/>
                 <field name="actual_return_date"/>
@@ -47,14 +47,14 @@
                                 </div>
                             </div>
                             
-                            <!-- Department Section -->
+                            <!-- Community Section -->
                             <div style="padding: 16px;">
                                 <div style="display: flex; align-items: flex-start; margin-bottom: 0;">
-                                    <i class="fa fa-building-o" style="margin-right: 8px; margin-top: 2px; color: #666; font-size: 14px;"/>
+                                    <i class="fa fa-user" style="margin-right: 8px; margin-top: 2px; color: #666; font-size: 14px;"/>
                                     <div style="flex: 1;">
-                                        <div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Department</div>
+                                        <div style="font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Community Member</div>
                                         <div style="font-size: 14px; font-weight: 600; color: #333; line-height: 1.3;">
-                                            <field name="department_id"/>
+                                            <field name="community_id"/>
                                         </div>
                                     </div>
                                 </div>
@@ -129,7 +129,7 @@
             <list>
                 <field name="name"/>
                 <field name="asset_id"/>
-                <field name="department_id"/>
+                <field name="community_id"/>
                 <field name="borrowed_date"/>
                 <field name="expected_return_date"/>
                 <field name="actual_return_date"/>
@@ -156,7 +156,7 @@
                     <group>
                         <group>
                             <field name="asset_id" options="{'no_create': True}" required="1"/>
-                            <field name="department_id" options="{'no_create': True}"/>
+                            <field name="community_id" options="{'no_create': True}" required="1"/>
                             <field name="status"/>
                         </group>
                         <group>

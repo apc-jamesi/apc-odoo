@@ -8,8 +8,7 @@ class LogilinkAssetBorrowing(models.Model):
 
     name = fields.Char("Reference", compute="_compute_name", store=True, readonly=True)
     asset_id = fields.Many2one("logilink.asset", string="Asset", required=True, help="Asset being borrowed or assigned")
-    borrowing_department = fields.Char("Borrowing Department", required=False, help="Department borrowing or receiving the asset (deprecated - use Department field)")
-    department_id = fields.Many2one("logilink.department", string="Department", help="Department borrowing or receiving the asset")
+    community_id = fields.Many2one("logilink.community", string="Community Member", required=True, help="Community member borrowing or receiving the asset")
     borrowed_date = fields.Date("Borrowed Date", default=fields.Date.today, required=True, help="Date when asset was borrowed")
     expected_return_date = fields.Date("Expected Return Date", help="Expected date for asset return")
     actual_return_date = fields.Date("Actual Return Date", help="Actual date when asset was returned")
@@ -24,7 +23,7 @@ class LogilinkAssetBorrowing(models.Model):
 
     @api.depends("asset_id", "borrowed_date")
     def _compute_name(self):
-        for rec in self:
+        for rec in self:                                        
             if rec.asset_id and rec.borrowed_date:
                 rec.name = f"{rec.asset_id.name} - {rec.borrowed_date}"
             elif rec.asset_id:

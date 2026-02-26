@@ -6,3 +6,5 @@ from . import purchase_order
 from . import goods_receipt
 from . import supplier_invoice
 from . import payment
+from . import community
+from . import request

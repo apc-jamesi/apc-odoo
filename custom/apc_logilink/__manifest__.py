@@ -25,7 +25,7 @@
     "author": "Asia Pacific College",
     "website": "https://www.apc.edu.ph",
     "license": "LGPL-3",
-    "depends": ["base", "mail", "web"],
+    "depends": ["base", "mail", "web", "website"],
     "data": [
         "views/department_views.xml",
         "views/asset_views.xml",
@@ -35,6 +35,9 @@
         "views/goods_receipt_views.xml",
         "views/supplier_invoice_views.xml",
         "views/payment_views.xml",
+        "views/community_views.xml",
+        "views/request_views.xml",
+        "views/kiosk_templates.xml",
         "views/logilink_menu.xml",
         "security/ir.model.access.csv",
     ],

@@ -9,5 +9,6 @@
     <menuitem id="logilink_menu_supplier_invoice" name="Supplier Invoice" parent="logilink_root_menu" action="action_logilink_supplier_invoice" sequence="60"/>
     <menuitem id="logilink_menu_payment" name="Payment" parent="logilink_root_menu" action="action_logilink_payment" sequence="70"/>
     <menuitem id="logilink_menu_suppliers" name="Suppliers" parent="logilink_root_menu" action="action_logilink_suppliers" sequence="80"/>
+    <menuitem id="logilink_menu_community" name="Community" parent="logilink_root_menu" action="action_logilink_community" sequence="85"/>
     <menuitem id="logilink_menu_departments" name="Department" parent="logilink_root_menu" action="action_logilink_departments" sequence="90"/>
 </odoo>
