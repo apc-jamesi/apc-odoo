@@ -24,10 +24,10 @@
                 <field name="pr_number"/>
                 <field name="date_requested"/>
                 <field name="department_id"/>
-                <field name="requested_by"/>
+                <field name="requested_by_community_id"/>
+                <field name="approver_id"/>
                 <field name="date_needed"/>
                 <field name="status" widget="badge"/>
-                <field name="total_amount"/>
                 <field name="active"/>
             </list>
         </field>
@@ -39,25 +39,52 @@
         <field name="arch" type="xml">
             <form string="Purchase Request">
                 <header>
+                    <button name="action_send_purchase_request_email"
+                            type="object"
+                            string="Send via Email"
+                            class="oe_highlight"
+                            icon="fa-envelope"
+                            invisible="status in ['approved', 'declined']"
+                            title="Send Purchase Request information via email"/>
                     <button name="action_view_list_export"
                             type="object"
                             string="Export Data"
                             class="btn-primary"
                             icon="fa-download"
                             title="Open list view to export data (CSV/XLSX)"/>
+                    <button name="action_decline"
+                            type="object"
+                            string="Decline"
+                            class="btn-danger"
+                            icon="fa-times"
+                            confirm="Are you sure you want to decline this Purchase Request?"
+                            invisible="status in ['approved', 'declined']"
+                            title="Decline this Purchase Request"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_purchase_orders"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-shopping-cart"
+                                invisible="po_count == 0">
+                            <field name="po_count" widget="statinfo" string="Purchase Orders"/>
+                        </button>
+                    </div>
+                    <group>
+                        <field name="status" widget="statusbar"
+                               statusbar_visible="requested,submitted,approved,declined"/>
+                    </group>
                     <group>
                         <group>
                             <field name="pr_number" required="1"/>
                             <field name="date_requested" required="1"/>
                             <field name="department_id" options="{'no_create': True}" required="1"/>
-                            <field name="requested_by" options="{'no_create': False}" required="1"/>
+                            <field name="requested_by_community_id" options="{'no_create': True}" required="1"/>
+                            <field name="approver_id" options="{'no_create': True}"/>
                         </group>
                         <group>
                             <field name="date_needed"/>
-                            <field name="status"/>
-                            <field name="total_amount"/>
                             <field name="active"/>
                         </group>
                     </group>
@@ -70,9 +97,18 @@
                                 <list editable="bottom">
                                     <field name="item_description" required="1"/>
                                     <field name="quantity_requested" required="1"/>
-                                    <field name="estimated_unit_cost"/>
-                                    <field name="line_total"/>
                                     <field name="item_type" required="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Purchase Orders" invisible="po_count == 0">
+                            <field name="po_ids" nolabel="1" readonly="1">
+                                <list>
+                                    <field name="po_number"/>
+                                    <field name="supplier_id"/>
+                                    <field name="po_date"/>
+                                    <field name="status" widget="badge"/>
+                                    <field name="total_po_amount"/>
                                 </list>
                             </field>
                         </page>
@@ -90,7 +126,7 @@
         <field name="arch" type="xml">
             <graph string="Purchase Requests Analysis" type="bar" sample="1">
                 <field name="department_id" type="row"/>
-                <field name="total_amount" type="measure"/>
+                <field name="po_count" type="measure"/>
             </graph>
         </field>
     </record>

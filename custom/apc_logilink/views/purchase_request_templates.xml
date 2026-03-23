@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Approval/Decline Form Template -->
+    <template id="pr_action_form" name="Purchase Request Action Form">
+        <t t-call="web.layout">
+            <t t-set="title">Purchase Request Action</t>
+            <div style="min-height: 100vh; background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%); padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden;">
+                    <!-- Header -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; color: white;">
+                        <h1 style="margin: 0; font-size: 24px; font-weight: 600;">Purchase Request Action</h1>
+                        <p style="margin: 8px 0 0 0; opacity: 0.95; font-size: 14px;">PR Number: <strong t-esc="pr.pr_number"/></p>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div style="padding: 30px;">
+                        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #667eea;">
+                            <p style="margin: 0; color: #495057; line-height: 1.6;">
+                                You are about to <strong t-esc="action_label.lower()"/> this purchase request. 
+                                Please add a message (optional) that will be added to the remarks field.
+                            </p>
+                        </div>
+                        
+                        <form method="POST" style="margin: 0;">
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50;">Your Message:</label>
+                                <textarea 
+                                    name="message" 
+                                    rows="5" 
+                                    placeholder="Enter your message here (optional)..."
+                                    style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 6px; font-family: inherit; font-size: 14px; resize: vertical; box-sizing: border-box;"
+                                ></textarea>
+                            </div>
+                            
+                            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                                <a href="/" style="display: inline-block; padding: 12px 24px; background: #6c757d; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Cancel</a>
+                                <button 
+                                    type="submit" 
+                                    t-attf-style="display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, {{button_color}} 0%, {{button_color}} 100%); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 15px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);"
+                                >
+                                    <t t-esc="action_label"/>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Success Page Template -->
+    <template id="pr_action_success" name="Purchase Request Action Success">
+        <t t-call="web.layout">
+            <t t-set="title">Action Successful</t>
+            <div style="min-height: 100vh; background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%); padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden;">
+                    <!-- Header -->
+                    <div style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); padding: 40px 30px; color: white; text-align: center;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">✓</div>
+                        <h1 style="margin: 0; font-size: 28px; font-weight: 600;">Purchase Request <t t-esc="action.title()"/>!</h1>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div style="padding: 30px;">
+                        <div style="background-color: #e8f5e9; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #27ae60;">
+                            <p style="margin: 0; color: #2e7d32; line-height: 1.6;">
+                                <strong>PR Number:</strong> <t t-esc="pr.pr_number"/><br/>
+                                <strong>Status:</strong> <t t-esc="pr.status.title()"/>
+                            </p>
+                        </div>
+                        
+                        <t t-if="message">
+                            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                                <h3 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 16px; font-weight: 600;">Your Message:</h3>
+                                <p style="margin: 0; color: #495057; line-height: 1.6; white-space: pre-wrap;" t-esc="message"/>
+                            </div>
+                        </t>
+                        
+                        <p style="color: #7f8c8d; font-size: 14px; line-height: 1.6;">
+                            Your action has been recorded and the message has been added to the purchase request remarks. 
+                            The requester will be notified.
+                        </p>
+                        
+                        <div style="margin-top: 30px; text-align: center;">
+                            <a href="/" style="display: inline-block; padding: 12px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">Close</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Error Page Template -->
+    <template id="pr_action_error" name="Purchase Request Action Error">
+        <t t-call="web.layout">
+            <t t-set="title">Error</t>
+            <div style="min-height: 100vh; background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%); padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden;">
+                    <!-- Header -->
+                    <div style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); padding: 40px 30px; color: white; text-align: center;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">✗</div>
+                        <h1 style="margin: 0; font-size: 28px; font-weight: 600;">Error</h1>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div style="padding: 30px;">
+                        <div style="background-color: #ffebee; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #e74c3c;">
+                            <p style="margin: 0; color: #c62828; line-height: 1.6;" t-esc="error"/>
+                        </div>
+                        
+                        <div style="margin-top: 30px; text-align: center;">
+                            <a href="/" style="display: inline-block; padding: 12px 32px; background: #6c757d; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px;">Go Back</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

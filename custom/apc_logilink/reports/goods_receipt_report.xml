@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Goods Receipt Note (GRN) Report Template -->
+    <template id="report_goods_receipt_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="page">
+                    <div class="oe_structure"/>
+                    <div class="row">
+                        <div class="col-12">
+                            <!-- Header -->
+                            <div style="text-align: center; margin-bottom: 30px;">
+                                <h2 style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">GOODS RECEIPT NOTE</h2>
+                                <p style="font-size: 14px; color: #666;">Asia Pacific College</p>
+                            </div>
+
+                            <hr style="border-top: 2px solid #000; margin: 20px 0;"/>
+
+                            <!-- GRN Information -->
+                            <div style="margin-bottom: 30px;">
+                                <table style="width: 100%;">
+                                    <tr>
+                                        <td style="width: 50%; vertical-align: top;">
+                                            <table style="width: 100%;">
+                                                <tr>
+                                                    <td style="padding: 5px 0; font-weight: bold; width: 160px;">GRN Number:</td>
+                                                    <td style="padding: 5px 0;"><t t-esc="o.grn_number"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 5px 0; font-weight: bold;">Date Received:</td>
+                                                    <td style="padding: 5px 0;"><t t-esc="o.date_received"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 5px 0; font-weight: bold;">Received By:</td>
+                                                    <td style="padding: 5px 0;"><t t-esc="o.received_by.name"/></td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 5px 0; font-weight: bold;">Status:</td>
+                                                    <td style="padding: 5px 0;">
+                                                        <t t-set="status_dict" t-value="dict(o._fields['status'].selection)"/>
+                                                        <t t-esc="status_dict.get(o.status, o.status)"/>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td style="width: 50%; vertical-align: top;">
+                                            <table style="width: 100%;">
+                                                <tr t-if="o.po_id">
+                                                    <td style="padding: 5px 0; font-weight: bold; width: 160px;">Purchase Order:</td>
+                                                    <td style="padding: 5px 0;"><t t-esc="o.po_id.po_number"/></td>
+                                                </tr>
+                                                <tr t-if="o.po_id and o.po_id.supplier_id">
+                                                    <td style="padding: 5px 0; font-weight: bold;">Supplier:</td>
+                                                    <td style="padding: 5px 0;"><t t-esc="o.po_id.supplier_id.name"/></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <hr style="border-top: 1px solid #ccc; margin: 20px 0;"/>
+
+                            <!-- GRN Lines -->
+                            <div style="margin-top: 20px;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background-color: #f0f0f0;">
+                                            <th style="border: 1px solid #000; padding: 10px; text-align: left; font-weight: bold;">PO Line</th>
+                                            <th style="border: 1px solid #000; padding: 10px; text-align: center; font-weight: bold;">Qty Ordered</th>
+                                            <th style="border: 1px solid #000; padding: 10px; text-align: center; font-weight: bold;">Qty Delivered</th>
+                                            <th style="border: 1px solid #000; padding: 10px; text-align: left; font-weight: bold;">Condition</th>
+                                            <th style="border: 1px solid #000; padding: 10px; text-align: left; font-weight: bold;">Remarks</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="o.line_ids" t-as="line">
+                                            <tr>
+                                                <td style="border: 1px solid #000; padding: 8px;">
+                                                    <t t-esc="line.po_line_summary or (line.po_line_id and line.po_line_id.item_description)"/>
+                                                </td>
+                                                <td style="border: 1px solid #000; padding: 8px; text-align: center;">
+                                                    <t t-esc="'{0:,.2f}'.format(line.quantity_received)"/>
+                                                </td>
+                                                <td style="border: 1px solid #000; padding: 8px; text-align: center;">
+                                                    <t t-esc="'{0:,.2f}'.format(line.quantity_delivered)"/>
+                                                </td>
+                                                <td style="border: 1px solid #000; padding: 8px;">
+                                                    <t t-set="cond_dict" t-value="dict(line._fields['condition'].selection)"/>
+                                                    <t t-esc="cond_dict.get(line.condition, line.condition)"/>
+                                                </td>
+                                                <td style="border: 1px solid #000; padding: 8px;"><t t-esc="line.remarks or ''"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Footer -->
+                            <div style="margin-top: 50px; text-align: center;">
+                                <p style="font-size: 12px; color: #666;">
+                                    Generated on <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S')"/>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="oe_structure"/>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <!-- Report Action -->
+    <record id="action_report_goods_receipt" model="ir.actions.report">
+        <field name="name">Goods Receipt Note</field>
+        <field name="model">logilink.goods.receipt.header</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">apc_logilink.report_goods_receipt_document</field>
+        <field name="report_file">apc_logilink.report_goods_receipt_document</field>
+        <field name="print_report_name">'GRN - %s' % (object.grn_number)</field>
+        <field name="binding_model_id" ref="model_logilink_goods_receipt_header"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
+

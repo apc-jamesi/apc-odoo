@@ -67,21 +67,12 @@
                         <page string="Invoice Lines">
                             <field name="line_ids" nolabel="1">
                                 <list editable="bottom">
-                                    <field name="po_line_id" options="{'no_create': True}"/>
+                                    <field name="po_line_id"
+                                           options="{'no_create': True}"
+                                           domain="[('po_id', '=', parent.po_id)]"/>
                                     <field name="quantity_invoiced" required="1"/>
                                     <field name="unit_price" required="1"/>
                                     <field name="line_total"/>
-                                </list>
-                            </field>
-                        </page>
-                        <page string="Payments">
-                            <field name="payment_ids" nolabel="1">
-                                <list>
-                                    <field name="payment_date"/>
-                                    <field name="payment_method"/>
-                                    <field name="payment_reference"/>
-                                    <field name="amount_paid"/>
-                                    <field name="status" widget="badge"/>
                                 </list>
                             </field>
                         </page>

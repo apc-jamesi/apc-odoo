@@ -6,6 +6,8 @@ access_logilink_purchase_request_header_user,logilink.purchase.request.header us
 access_logilink_purchase_request_line_user,logilink.purchase.request.line user,model_logilink_purchase_request_line,,1,1,1,1
 access_logilink_purchase_order_header_user,logilink.purchase.order.header user,model_logilink_purchase_order_header,,1,1,1,1
 access_logilink_purchase_order_line_user,logilink.purchase.order.line user,model_logilink_purchase_order_line,,1,1,1,1
+access_logilink_purchase_request_create_po_wizard_user,logilink.purchase.request.create.po.wizard user,model_logilink_purchase_request_create_po_wizard,,1,1,1,1
+access_logilink_purchase_request_create_po_wizard_line_user,logilink.purchase.request.create.po.wizard.line user,model_logilink_purchase_request_create_po_wizard_line,,1,1,1,1
 access_logilink_goods_receipt_header_user,logilink.goods.receipt.header user,model_logilink_goods_receipt_header,,1,1,1,1
 access_logilink_goods_receipt_line_user,logilink.goods.receipt.line user,model_logilink_goods_receipt_line,,1,1,1,1
 access_logilink_supplier_invoice_header_user,logilink.supplier.invoice.header user,model_logilink_supplier_invoice_header,,1,1,1,1

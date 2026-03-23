@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_purchase_request_create_po_wizard_form" model="ir.ui.view">
+        <field name="name">logilink.purchase.request.create.po.wizard.form</field>
+        <field name="model">logilink.purchase.request.create.po.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create Purchase Order">
+                <group>
+                    <field name="pr_id"/>
+                    <field name="supplier_id" options="{'no_create': True}"/>
+                    <field name="po_number"/>
+                </group>
+                <group>
+                    <field name="line_ids" nolabel="1" options="{'no_create': True, 'no_create_edit': True}">
+                        <list editable="bottom" create="false" delete="false">
+                            <field name="pr_line_id" options="{'no_create': True}"/>
+                            <field name="item_description"/>
+                            <field name="qty_remaining"/>
+                            <field name="qty_to_order"/>
+                            <field name="unit_price"/>
+                        </list>
+                    </field>
+                </group>
+                <footer>
+                    <button name="action_confirm" type="object" string="Create Purchase Order" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_purchase_request_create_po_wizard" model="ir.actions.act_window">
+        <field name="name">Create Purchase Order</field>
+        <field name="res_model">logilink.purchase.request.create.po.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{}</field>
+    </record>
+
+</odoo>
+

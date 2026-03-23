@@ -25,6 +25,7 @@
                 <field name="name"/>
                 <field name="email"/>
                 <field name="phone"/>
+                <field name="partner_id" optional="hide"/>
                 <field name="active"/>
             </list>
         </field>
@@ -42,6 +43,12 @@
                             class="btn-primary"
                             icon="fa-download"
                             title="Open list view to export data (CSV/XLSX)"/>
+                    <button name="action_resync_partner"
+                            type="object"
+                            string="Re-sync Contact"
+                            class="btn-secondary"
+                            icon="fa-refresh"
+                            title="Create/link the res.partner contact for this Community member (if missing)"/>
                 </header>
                 <sheet>
                     <group>
@@ -50,6 +57,7 @@
                             <field name="name" required="1"/>
                             <field name="email"/>
                             <field name="phone"/>
+                            <field name="partner_id" readonly="1"/>
                             <field name="active"/>
                         </group>
                     </group>

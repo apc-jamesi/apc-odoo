@@ -43,6 +43,12 @@
                             class="btn-primary"
                             icon="fa-download"
                             title="Open list view to export data (CSV/XLSX)"/>
+                    <button name="action_print_grn"
+                            type="object"
+                            string="Print PDF"
+                            class="oe_highlight"
+                            icon="fa-file-pdf-o"
+                            title="Print Goods Receipt Note as PDF"/>
                 </header>
                 <sheet>
                     <group>
@@ -61,12 +67,23 @@
                         <page string="GRN Lines">
                             <field name="line_ids" nolabel="1">
                                 <list editable="bottom">
-                                    <field name="po_line_id" options="{'no_create': True}" required="1"/>
+                                    <field name="po_line_summary" readonly="1"/>
                                     <field name="quantity_received" required="1"/>
-                                    <field name="quantity_accepted" required="1"/>
+                                    <field name="quantity_delivered" required="1"/>
                                     <field name="condition" required="1"/>
                                     <field name="remarks"/>
                                 </list>
+                                <form string="GRN Line">
+                                    <group>
+                                        <field name="po_line_summary" readonly="1"/>
+                                    </group>
+                                    <group>
+                                        <field name="quantity_received"/>
+                                        <field name="quantity_delivered"/>
+                                        <field name="condition"/>
+                                        <field name="remarks"/>
+                                    </group>
+                                </form>
                             </field>
                         </page>
                     </notebook>
