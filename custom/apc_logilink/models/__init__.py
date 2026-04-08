@@ -1,6 +1,7 @@
 from . import department
 from . import asset
 from . import asset_borrowing
+from . import mail_compose_message
 from . import purchase_request
 from . import purchase_order
 from . import goods_receipt

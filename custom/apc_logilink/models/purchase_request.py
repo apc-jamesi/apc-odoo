@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 from markupsafe import Markup
 
 class LogilinkPurchaseRequestHeader(models.Model):
@@ -42,6 +43,7 @@ class LogilinkPurchaseRequestHeader(models.Model):
         help="Approver (selected from Community).",
     )
     date_needed = fields.Date("Date Needed", help="Date when the items are needed")
+    purpose = fields.Text("Purpose", help="Purpose or business justification for this purchase request")
     status = fields.Selection([
         ("requested", "Requested"),
         ("submitted", "Submitted"),
@@ -62,6 +64,21 @@ class LogilinkPurchaseRequestHeader(models.Model):
         ("pr_number_unique", "unique(pr_number)", "PR Number must be unique."),
     ]
 
+    @api.model
+    def _next_pr_number(self):
+        """Generate the next PR number, preferring a configured sequence."""
+        sequence = self.env["ir.sequence"].sudo().next_by_code("apc_logilink.purchase.request")
+        if sequence:
+            return sequence
+        return f"PR-{fields.Datetime.now().strftime('%Y%m%d-%H%M%S')}"
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get("pr_number"):
+                vals["pr_number"] = self._next_pr_number()
+        return super().create(vals_list)
+
     @api.depends("line_ids.line_total")
     def _compute_total_amount(self):
         """Compute total amount from all lines"""
@@ -72,6 +89,26 @@ class LogilinkPurchaseRequestHeader(models.Model):
     def _compute_po_count(self):
         for rec in self:
             rec.po_count = len(rec.po_ids)
+
+    def _get_missing_action_fields(self):
+        """Return missing required fields before key PR actions are allowed."""
+        self.ensure_one()
+        missing_fields = []
+        if not self.pr_number:
+            missing_fields.append(_("PR Number"))
+        if not self.date_requested:
+            missing_fields.append(_("Date Requested"))
+        if not self.department_id:
+            missing_fields.append(_("Department"))
+        if not self.requested_by_community_id:
+            missing_fields.append(_("Requested By"))
+        if not self.approver_id:
+            missing_fields.append(_("Approver"))
+        if not self.purpose:
+            missing_fields.append(_("Purpose"))
+        if not self.line_ids:
+            missing_fields.append(_("Request Lines"))
+        return missing_fields
 
     def write(self, vals):
         """Override write to auto-create PO when status changes to approved"""
@@ -253,6 +290,12 @@ class LogilinkPurchaseRequestHeader(models.Model):
     def action_decline(self):
         """Decline purchase request from UI (without message)"""
         self.ensure_one()
+        missing_fields = self._get_missing_action_fields()
+        if missing_fields:
+            raise UserError(
+                _("Please complete the following before declining: %s")
+                % ", ".join(missing_fields)
+            )
         if self.status not in ['requested', 'submitted']:
             raise ValueError(_('Only Requested or Submitted requests can be declined.'))
         
@@ -269,9 +312,17 @@ class LogilinkPurchaseRequestHeader(models.Model):
     def action_send_purchase_request_email(self):
         """Open mail composer to send Purchase Request information via email"""
         self.ensure_one()
+        missing_fields = self._get_missing_action_fields()
+
+        if missing_fields:
+            raise UserError(
+                _("Please complete the following before sending via email: %s")
+                % ", ".join(missing_fields)
+            )
         
         # Generate email body with all Purchase Request information
         email_body = self._generate_purchase_request_email_body()
+        default_email_from = self.env["ir.config_parameter"].sudo().get_param("mail.default.from")
         
         # Prepare context for mail compose wizard
         ctx = {
@@ -286,6 +337,8 @@ class LogilinkPurchaseRequestHeader(models.Model):
             'form_view_ref': 'mail.email_compose_message_wizard_form',
             'clicked_on_full_composer': True,
         }
+        if default_email_from:
+            ctx["default_email_from"] = default_email_from
         
         # Send to Approver (Community), not Requested By.
         if self.approver_id and self.approver_id.partner_id:
@@ -346,6 +399,7 @@ class LogilinkPurchaseRequestHeader(models.Model):
             if self.requested_by_community_id and self.requested_by_community_id.name
             else 'N/A'
         )
+        purpose_text = self.purpose if isinstance(self.purpose, Markup) else (Markup.escape(self.purpose) if self.purpose else '')
         
         body_parts.append(f"<table style='width: 100%; border-collapse: collapse;'>")
         body_parts.append(f"<tr><td style='padding: 12px 0; font-weight: 600; color: #424242; width: 180px; border-bottom: 1px solid #e0e0e0;'>PR Number</td><td style='padding: 12px 0; color: #212121; border-bottom: 1px solid #e0e0e0;'><strong style='color: #212121;'>{pr_number}</strong></td></tr>")
@@ -356,6 +410,12 @@ class LogilinkPurchaseRequestHeader(models.Model):
         # PR now focuses on canvassing requested items (item + quantity + type). Costs/totals are handled on the Purchase Order.
         body_parts.append(f"</table>")
         body_parts.append(f"</div>")
+        
+        if purpose_text:
+            body_parts.append(f"<div style='background-color: #ffffff; padding: 25px 30px; margin: 0 30px 20px 30px; border-radius: 8px; border: 1px solid #e0e0e0; border-left: 4px solid #673ab7;'>")
+            body_parts.append(f"<h2 style='color: #212121; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;'>Purpose</h2>")
+            body_parts.append(f"<p style='margin: 0; color: #424242; line-height: 1.6;'>{purpose_text}</p>")
+            body_parts.append(f"</div>")
         
         # Remarks Card
         if self.remarks:

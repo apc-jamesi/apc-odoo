@@ -82,17 +82,61 @@ class LogilinkPurchaseOrderHeader(models.Model):
         report = self.env.ref("apc_logilink.action_report_purchase_order")
         return report.report_action(self)
 
-    def action_mark_sent_supplier(self):
-        """Move PO from Requested to Sent to Supplier (Quotation) and email the supplier with PO PDF."""
+    def action_print_approved_po(self):
+        """Print an already approved PO without changing its status."""
         self.ensure_one()
 
-        if self.status == "requested":
-            self.status = "sent_supplier"
-            self.message_post(
+        if self.status != "approved":
+            raise UserError(_("Only approved purchase orders can be printed from this action."))
+
+        report = self.env.ref("apc_logilink.action_report_purchase_order")
+        return report.report_action(self)
+
+    def _mark_sent_supplier_after_email(self):
+        """Advance to supplier-sent only after the supplier email is actually sent."""
+        for rec in self:
+            if rec.status != "requested":
+                continue
+            rec.status = "sent_supplier"
+            rec.message_post(
                 body=Markup(_("Purchase Order has been <strong>sent to supplier</strong> for quotation.")),
-                subject=_("PO Sent to Supplier: %s") % self.po_number,
+                subject=_("PO Sent to Supplier: %s") % rec.po_number,
             )
-        else:
+
+    def _mark_submitted_email_after_send(self):
+        """Advance to approval-submitted only after the approval email is actually sent."""
+        for rec in self:
+            if rec.status != "sent_supplier":
+                continue
+            rec.status = "submitted_email"
+            rec.message_post(
+                body=Markup(_("Purchase Order has been <strong>submitted for approval via email</strong>.")),
+                subject=_("PO Submitted via Email: %s") % rec.po_number,
+            )
+
+    def action_mark_sent_supplier(self):
+        """Open a wizard that lets the user choose how to send the PO to the supplier."""
+        self.ensure_one()
+
+        if self.status != "requested":
+            raise UserError(_("Only Requested purchase orders can be sent to supplier."))
+        if not self.supplier_id:
+            raise UserError(_("Please select a Supplier before continuing."))
+
+        return {
+            "name": _("Send Purchase Order to Supplier"),
+            "type": "ir.actions.act_window",
+            "res_model": "logilink.purchase.order.send.supplier.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {"default_po_id": self.id},
+        }
+
+    def action_open_supplier_email_composer(self):
+        """Prepare the supplier email composer with the PO PDF attached."""
+        self.ensure_one()
+
+        if self.status != "requested":
             raise UserError(_("Only Requested purchase orders can be sent to supplier."))
 
         if not self.supplier_id:
@@ -119,36 +163,51 @@ class LogilinkPurchaseOrderHeader(models.Model):
         )
 
         subject = _("Purchase Order %s") % (self.po_number or "")
-        body_text = _(
-            "Hi %s,\n\n"
-            "Please find attached the Purchase Order %s.\n"
-            "Kindly review and proceed accordingly.\n\n"
-            "Thank you."
-        ) % (self.supplier_id.name or "", self.po_number or "")
-        # mail composer expects HTML. Keep it plain by escaping and only converting newlines to <br/>.
-        body_html = Markup.escape(body_text).replace("\n", "<br/>")
+        body_text = _("[Insert your message body here...]")
+        default_email_from = self.env["ir.config_parameter"].sudo().get_param("mail.default.from")
 
         ctx = {
             "default_model": self._name,
             "default_res_ids": [self.id],
             "default_composition_mode": "comment",
             "default_subject": subject,
-            "default_body": body_html,
+            "default_body": body_text,
             "default_partner_ids": [(6, 0, [self.supplier_id.id])],
             "force_email": True,
             "default_attachment_ids": [(6, 0, [attachment.id])],
             "form_view_ref": "mail.email_compose_message_wizard_form",
             "clicked_on_full_composer": True,
+            "mark_po_sent_supplier_after_send": True,
         }
+        if default_email_from:
+            ctx["default_email_from"] = default_email_from
 
         return {
             "name": _("Send Purchase Order to Supplier"),
             "type": "ir.actions.act_window",
             "res_model": "mail.compose.message",
             "view_mode": "form",
-            "target": "new",
+            "target": self.env.context.get("mail_composer_target", "new"),
             "context": ctx,
         }
+
+    def action_download_supplier_pdf(self):
+        """Download the supplier-facing PO PDF and advance to Sent to Supplier."""
+        self.ensure_one()
+
+        if self.status != "requested":
+            raise UserError(_("Only Requested purchase orders can be downloaded from this action."))
+
+        self.status = "sent_supplier"
+        self.message_post(
+            body=Markup(_("Purchase Order PDF has been <strong>downloaded</strong> for supplier quotation.")),
+            subject=_("PO PDF Downloaded: %s") % self.po_number,
+        )
+
+        report = self.env.ref("apc_logilink.action_report_purchase_order")
+        action = report.report_action(self)
+        action["close_on_report_download"] = True
+        return action
 
     def action_approve(self):
         """Approve PO and log in chatter."""
@@ -219,13 +278,8 @@ class LogilinkPurchaseOrderHeader(models.Model):
         if self.status != "sent_supplier":
             raise UserError(_("You can only submit via email after the PO is sent to supplier."))
 
-        self.status = "submitted_email"
-        self.message_post(
-            body=Markup(_("Purchase Order has been <strong>submitted for approval via email</strong>.")),
-            subject=_("PO Submitted via Email: %s") % self.po_number,
-        )
-
-        email_body = self._generate_purchase_order_email_body()
+        email_body = self._generate_purchase_order_email_body(display_status="submitted_email")
+        default_email_from = self.env["ir.config_parameter"].sudo().get_param("mail.default.from")
 
         partner_ids = []
         # Odoo's mail composer primarily targets res.partner recipients (partner_ids).
@@ -254,7 +308,10 @@ class LogilinkPurchaseOrderHeader(models.Model):
             "force_email": True,
             "form_view_ref": "mail.email_compose_message_wizard_form",
             "clicked_on_full_composer": True,
+            "mark_po_submitted_email_after_send": True,
         }
+        if default_email_from:
+            ctx["default_email_from"] = default_email_from
 
         if partner_ids:
             ctx["default_partner_ids"] = [(6, 0, partner_ids)]
@@ -271,9 +328,10 @@ class LogilinkPurchaseOrderHeader(models.Model):
             "context": ctx,
         }
 
-    def _generate_purchase_order_email_body(self):
+    def _generate_purchase_order_email_body(self, display_status=None):
         """Generate formatted email body with Purchase Order information + action buttons."""
         self.ensure_one()
+        display_status = display_status or self.status
 
         status_colors = {
             "requested": {"bg": "#f5f5f5", "border": "#9e9e9e", "badge_bg": "#757575", "badge_text": "#ffffff"},
@@ -283,7 +341,7 @@ class LogilinkPurchaseOrderHeader(models.Model):
             "approved": {"bg": "#e8f5e9", "border": "#4caf50", "badge_bg": "#4caf50", "badge_text": "#ffffff"},
             "declined": {"bg": "#ffebee", "border": "#f44336", "badge_bg": "#f44336", "badge_text": "#ffffff"},
         }
-        status_info = status_colors.get(self.status, status_colors["requested"])
+        status_info = status_colors.get(display_status, status_colors["requested"])
 
         body_parts = []
         body_parts.append(
@@ -297,7 +355,7 @@ class LogilinkPurchaseOrderHeader(models.Model):
         body_parts.append("<p style='margin: 8px 0 0 0; font-size: 16px; color: #e0e0e0;'>Approval Required</p>")
         body_parts.append("</div>")
 
-        status_label = Markup.escape(dict(self._fields["status"].selection).get(self.status, self.status))
+        status_label = Markup.escape(dict(self._fields["status"].selection).get(display_status, display_status))
         body_parts.append(
             f"<div style='padding: 20px 30px; background-color: {status_info['bg']}; border-left: 4px solid {status_info['border']}; margin: 20px 30px; border-radius: 4px;'>"
         )
@@ -387,7 +445,7 @@ class LogilinkPurchaseOrderHeader(models.Model):
             body_parts.append("</tbody></table></div>")
 
         # Action buttons (only show if status allows)
-        if self.status == "submitted_email":
+        if display_status == "submitted_email":
             base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url", "http://localhost:8069")
             approve_url = f"{base_url}/purchase_order/{self.id}/approve"
             decline_url = f"{base_url}/purchase_order/{self.id}/decline"

@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="purchase_request_public_form" name="Public Purchase Request Form">
+        <t t-call="website.layout">
+            <t t-set="title">Purchase Request Form</t>
+            <style>
+                #wrapwrap > header,
+                #wrapwrap > footer {
+                    display: none !important;
+                }
+
+                #wrapwrap main {
+                    padding-top: 0 !important;
+                }
+            </style>
+            <div class="container py-5">
+                <div class="row justify-content-center">
+                    <div class="col-lg-9">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-4 p-lg-5">
+                                <div class="text-center mb-4">
+                                    <h1 class="h2 mb-2">Purchase Request Form</h1>
+                                    <p class="text-muted mb-0">Submit a purchase request with optional line items.</p>
+                                </div>
+
+                                <t t-if="errors">
+                                    <div class="alert alert-danger" role="alert">
+                                        <strong class="d-block mb-2">Please fix the following:</strong>
+                                        <ul class="mb-0 ps-3">
+                                            <t t-foreach="errors" t-as="error" t-key="error">
+                                                <li t-esc="error"/>
+                                            </t>
+                                        </ul>
+                                    </div>
+                                </t>
+
+                                <t t-if="not departments">
+                                    <div class="alert alert-warning" role="alert">
+                                        No departments are configured yet. Please contact the administrator before submitting a purchase request.
+                                    </div>
+                                </t>
+                                <t t-if="not communities">
+                                    <div class="alert alert-warning" role="alert">
+                                        No community records are available yet. Please contact the administrator before submitting a purchase request.
+                                    </div>
+                                </t>
+
+                                <form action="/purchase/request/submit" method="post">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label" for="community_id">Requested By</label>
+                                            <select
+                                                id="community_id"
+                                                name="community_id"
+                                                class="form-select"
+                                                required="required"
+                                                t-att-disabled="'disabled' if not communities else None"
+                                            >
+                                                <option value="">Select a requester</option>
+                                                <t t-foreach="communities" t-as="community" t-key="community.id">
+                                                    <option
+                                                        t-att-value="community.id"
+                                                        t-att-data-id-number="community.id_number or ''"
+                                                        t-att-selected="str(community.id) == values.get('community_id', '') and 'selected' or None"
+                                                        t-esc="community.name"
+                                                    />
+                                                </t>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label" for="requester_id_number">Requester ID Number</label>
+                                            <input
+                                                id="requester_id_number"
+                                                type="text"
+                                                name="requester_id_number"
+                                                class="form-control"
+                                                readonly="readonly"
+                                                t-att-value="values.get('requester_id_number', '')"
+                                            />
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label" for="department_id">Department</label>
+                                                    <select
+                                                        id="department_id"
+                                                        name="department_id"
+                                                        class="form-select"
+                                                        required="required"
+                                                        t-att-disabled="'disabled' if not departments else None"
+                                                    >
+                                                        <option value="">Select a department</option>
+                                                        <t t-foreach="departments" t-as="department" t-key="department.id">
+                                                            <option
+                                                                t-att-value="department.id"
+                                                                t-att-selected="str(department.id) == values.get('department_id', '') and 'selected' or None"
+                                                                t-esc="department.name"
+                                                            />
+                                                        </t>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label" for="approver_id">Approver</label>
+                                                    <select
+                                                        id="approver_id"
+                                                        name="approver_id"
+                                                        class="form-select"
+                                                        t-att-disabled="'disabled' if not communities else None"
+                                                    >
+                                                        <option value="">Select an approver</option>
+                                                        <t t-foreach="communities" t-as="community" t-key="'approver_%s' % community.id">
+                                                            <option
+                                                                t-att-value="community.id"
+                                                                t-att-selected="str(community.id) == values.get('approver_id', '') and 'selected' or None"
+                                                                t-esc="community.name"
+                                                            />
+                                                        </t>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label" for="purpose">Purpose</label>
+                                            <textarea
+                                                id="purpose"
+                                                name="purpose"
+                                                class="form-control"
+                                                rows="4"
+                                                required="required"
+                                                placeholder="Explain why this purchase is needed..."
+                                            ><t t-esc="values.get('purpose', '')"/></textarea>
+                                        </div>
+                                    </div>
+
+                                    <hr class="my-4"/>
+
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <h2 class="h4 mb-1">Line Items</h2>
+                                            <p class="text-muted mb-0">Add one or more requested items.</p>
+                                        </div>
+                                        <button type="button" id="add-pr-item" class="btn btn-outline-primary">
+                                            Add Item
+                                        </button>
+                                    </div>
+
+                                    <div id="pr-line-items" class="d-grid gap-3">
+                                        <t t-foreach="values.get('lines', [])" t-as="line" t-key="line">
+                                            <div class="border rounded p-3 pr-item-row bg-light">
+                                                <div class="row g-3 align-items-end">
+                                                    <div class="col-md-5">
+                                                        <label class="form-label">Item Description</label>
+                                                        <input
+                                                            type="text"
+                                                            name="item_description[]"
+                                                            class="form-control"
+                                                            placeholder="What needs to be purchased?"
+                                                            t-att-value="line.get('item_description', '')"
+                                                        />
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Quantity Requested</label>
+                                                        <input
+                                                            type="number"
+                                                            name="quantity_requested[]"
+                                                            class="form-control"
+                                                            min="0.01"
+                                                            step="0.01"
+                                                            t-att-value="line.get('quantity_requested', '1')"
+                                                        />
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <label class="form-label">Item Type</label>
+                                                        <select name="item_type[]" class="form-select">
+                                                            <t t-foreach="item_type_options" t-as="item_type_option" t-key="item_type_option[0]">
+                                                                <option
+                                                                    t-att-value="item_type_option[0]"
+                                                                    t-att-selected="line.get('item_type', 'consumable') == item_type_option[0] and 'selected' or None"
+                                                                    t-esc="item_type_option[1]"
+                                                                />
+                                                            </t>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-2 d-grid">
+                                                        <button type="button" class="btn btn-outline-danger pr-remove-item w-100" title="Remove item">
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+
+                                    <div class="mt-4 d-flex justify-content-end">
+                                        <button type="submit" class="btn btn-primary btn-lg" t-att-disabled="'disabled' if (not departments or not communities) else None">
+                                            Submit Purchase Request
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script type="text/javascript">
+                (function () {
+                    var requesterSelect = document.getElementById('community_id');
+                    var requesterIdInput = document.getElementById('requester_id_number');
+                    var container = document.getElementById('pr-line-items');
+                    var addButton = document.getElementById('add-pr-item');
+
+                    if (!container || !addButton) {
+                        return;
+                    }
+
+                    function syncRequesterId() {
+                        if (!requesterSelect || !requesterIdInput) {
+                            return;
+                        }
+                        var selectedOption = requesterSelect.options[requesterSelect.selectedIndex];
+                        requesterIdInput.value = selectedOption ? (selectedOption.getAttribute('data-id-number') || '') : '';
+                    }
+
+                    function resetRow(row) {
+                        var fields = row.querySelectorAll('input, select');
+                        fields.forEach(function (field) {
+                            if (field.tagName === 'SELECT') {
+                                field.value = 'consumable';
+                            } else if (field.name === 'quantity_requested[]') {
+                                field.value = '1';
+                            } else {
+                                field.value = '';
+                            }
+                        });
+                    }
+
+                    function updateRemoveButtons() {
+                        var rows = container.querySelectorAll('.pr-item-row');
+                        rows.forEach(function (row) {
+                            var button = row.querySelector('.pr-remove-item');
+                            if (button) {
+                                button.disabled = rows.length === 1;
+                            }
+                        });
+                    }
+
+                    function bindRemoveButtons(scope) {
+                        var buttons = scope.querySelectorAll('.pr-remove-item');
+                        buttons.forEach(function (button) {
+                            if (button.dataset.bound === '1') {
+                                return;
+                            }
+                            button.dataset.bound = '1';
+                            button.addEventListener('click', function () {
+                                var row = button.closest('.pr-item-row');
+                                var rows = container.querySelectorAll('.pr-item-row');
+                                if (rows.length === 1) {
+                                    resetRow(row);
+                                } else if (row) {
+                                    row.remove();
+                                }
+                                updateRemoveButtons();
+                            });
+                        });
+                    }
+
+                    addButton.addEventListener('click', function () {
+                        var rows = container.querySelectorAll('.pr-item-row');
+                        var sourceRow = rows.length ? rows[rows.length - 1] : null;
+                        if (!sourceRow) {
+                            return;
+                        }
+                        var clone = sourceRow.cloneNode(true);
+                        resetRow(clone);
+                        container.appendChild(clone);
+                        bindRemoveButtons(clone);
+                        updateRemoveButtons();
+                    });
+
+                    if (requesterSelect) {
+                        requesterSelect.addEventListener('change', syncRequesterId);
+                        syncRequesterId();
+                    }
+
+                    bindRemoveButtons(document);
+                    updateRemoveButtons();
+                })();
+            </script>
+        </t>
+    </template>
+
+    <template id="purchase_request_public_thank_you" name="Public Purchase Request Thank You">
+        <t t-call="website.layout">
+            <t t-set="title">Purchase Request Submitted</t>
+            <style>
+                #wrapwrap > header,
+                #wrapwrap > footer {
+                    display: none !important;
+                }
+
+                #wrapwrap main {
+                    padding-top: 0 !important;
+                }
+            </style>
+            <div class="container py-5">
+                <div class="row justify-content-center">
+                    <div class="col-lg-7">
+                        <div class="card shadow-sm border-0 text-center">
+                            <div class="card-body p-5">
+                                <h1 class="h2 mb-3">Thank you</h1>
+                                <p class="lead text-muted">Your purchase request has been submitted successfully.</p>
+                                <t t-if="pr_number">
+                                    <p class="mb-4">
+                                        Reference Number:
+                                        <strong t-esc="pr_number"/>
+                                    </p>
+                                </t>
+                                <a href="/purchase/request" class="btn btn-primary">Submit Another Request</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

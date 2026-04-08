@@ -27,11 +27,13 @@
     "license": "LGPL-3",
     "depends": ["base", "mail", "web", "website"],
     "data": [
+        "data/purchase_request_sequence.xml",
         "views/department_views.xml",
         "views/asset_views.xml",
         "views/asset_borrowing_views.xml",
         "views/purchase_request_views.xml",
         "views/purchase_request_create_po_wizard_views.xml",
+        "views/purchase_order_send_supplier_wizard_views.xml",
         # Reports must be loaded before views that reference them (e.g. Print PDF button)
         "reports/purchase_order_report.xml",
         "reports/goods_receipt_report.xml",
@@ -43,6 +45,7 @@
         "views/request_views.xml",
         "views/kiosk_templates.xml",
         "views/purchase_request_templates.xml",
+        "views/purchase_request_public_templates.xml",
         "views/purchase_order_templates.xml",
         "views/logilink_menu.xml",
         "security/ir.model.access.csv",

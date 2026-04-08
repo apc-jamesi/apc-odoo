@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_purchase_order_send_supplier_wizard_form" model="ir.ui.view">
+        <field name="name">logilink.purchase.order.send.supplier.wizard.form</field>
+        <field name="model">logilink.purchase.order.send.supplier.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Send Purchase Order to Supplier">
+                <group>
+                    <field name="po_id"/>
+                    <field name="supplier_id"/>
+                    <field name="supplier_email"/>
+                </group>
+                <group>
+                    <div class="o_form_label">Choose what to do next with this Purchase Order.</div>
+                </group>
+                <footer>
+                    <button name="action_send_email" type="object" string="Send Email to Supplier" class="btn-primary"/>
+                    <button name="action_download_pdf" type="object" string="Download PDF" class="btn-secondary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

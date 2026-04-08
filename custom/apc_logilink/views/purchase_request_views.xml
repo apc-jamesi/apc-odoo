@@ -41,16 +41,31 @@
                 <header>
                     <button name="action_send_purchase_request_email"
                             type="object"
-                            string="Send via Email"
+                            string="Send Request via Email"
                             class="oe_highlight"
                             icon="fa-envelope"
-                            invisible="status in ['approved', 'declined']"
+                            invisible="status in ['approved', 'declined'] or not id or not pr_number or not date_requested or not department_id or not requested_by_community_id or not approver_id or not purpose or not line_ids"
+                            title="Send Purchase Request information via email"/>
+                    <button string="Send Request via Email"
+                            type="button"
+                            class="oe_highlight"
+                            icon="fa-envelope"
+                            disabled="1"
+                            invisible="status in ['approved', 'declined'] or (id and pr_number and date_requested and department_id and requested_by_community_id and approver_id and purpose and line_ids)"
                             title="Send Purchase Request information via email"/>
                     <button name="action_view_list_export"
                             type="object"
                             string="Export Data"
                             class="btn-primary"
                             icon="fa-download"
+                            invisible="not id or not pr_number or not date_requested or not department_id or not requested_by_community_id or not approver_id or not purpose or not line_ids"
+                            title="Open list view to export data (CSV/XLSX)"/>
+                    <button string="Export Data"
+                            type="button"
+                            class="btn-primary"
+                            icon="fa-download"
+                            disabled="1"
+                            invisible="id and pr_number and date_requested and department_id and requested_by_community_id and approver_id and purpose and line_ids"
                             title="Open list view to export data (CSV/XLSX)"/>
                     <button name="action_decline"
                             type="object"
@@ -58,7 +73,14 @@
                             class="btn-danger"
                             icon="fa-times"
                             confirm="Are you sure you want to decline this Purchase Request?"
-                            invisible="status in ['approved', 'declined']"
+                            invisible="status in ['approved', 'declined'] or not id or not pr_number or not date_requested or not department_id or not requested_by_community_id or not approver_id or not purpose or not line_ids"
+                            title="Decline this Purchase Request"/>
+                    <button string="Decline"
+                            type="button"
+                            class="btn-danger"
+                            icon="fa-times"
+                            disabled="1"
+                            invisible="status in ['approved', 'declined'] or (id and pr_number and date_requested and department_id and requested_by_community_id and approver_id and purpose and line_ids)"
                             title="Decline this Purchase Request"/>
                 </header>
                 <sheet>
@@ -89,7 +111,10 @@
                         </group>
                     </group>
                     <group>
-                        <field name="remarks" placeholder="Enter any additional remarks..."/>
+                        <field name="purpose" placeholder="Describe the purpose of this purchase request..."/>
+                    </group>
+                    <group>
+                        <field name="remarks" readonly="1"/>
                     </group>
                     <notebook>
                         <page string="Request Lines">

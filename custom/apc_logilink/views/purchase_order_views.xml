@@ -68,6 +68,13 @@
                             icon="fa-file-pdf-o"
                             invisible="status != 'sent_supplier'"
                             title="Print Purchase Order (manual approval path)"/>
+                    <button name="action_print_approved_po"
+                            type="object"
+                            string="Print Approved PDF"
+                            class="btn-secondary"
+                            icon="fa-file-pdf-o"
+                            invisible="status != 'approved'"
+                            title="Print the approved Purchase Order as PDF"/>
                     <button name="action_approve"
                             type="object"
                             string="Approve"
@@ -123,7 +130,7 @@
                     <group>
                         <group>
                             <field name="po_number" required="1"/>
-                            <field name="pr_id" options="{'no_create': True}"/>
+                            <field name="pr_id" options="{'no_create': True}" domain="[('status', '=', 'approved')]"/>
                             <field name="approver_id" options="{'no_create': True}"/>
                             <field name="supplier_id" options="{'no_create': True}"/>
                             <field name="po_date" required="1"/>
@@ -141,9 +148,11 @@
                                            options="{'no_create': True}"
                                            domain="[('pr_id', '=', parent.pr_id)]"/>
                                     <field name="pr_quantity_requested" readonly="1"/>
-                                    <field name="pr_estimated_unit_cost" string="Unit Cost" readonly="1"/>
-                                    <field name="pr_line_total" readonly="1"/>
+                                    <field name="unit_price" string="Unit Cost"/>
+                                    <field name="line_total" string="Line Total" readonly="1"/>
                                     <field name="pr_item_type" readonly="1"/>
+                                    <field name="pr_estimated_unit_cost" string="Requested Unit Cost" readonly="1" optional="hide"/>
+                                    <field name="pr_line_total" string="Requested Line Total" readonly="1" optional="hide"/>
                                     <field name="pr_line_summary" readonly="1" optional="hide"/>
                                 </list>
                             </field>
